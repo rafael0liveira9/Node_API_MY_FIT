@@ -1,19 +1,26 @@
-const { urlencoded, json } = require("body-parser"),
-    express = require("express"),
-    serverless = require("serverless-http"),
-    { config } = require("dotenv"),
-    cors = require("cors"),
-    router = express();
+const { urlencoded, json } = require("body-parser");
+const express = require("express");
+const serverless = require("serverless-http");
+const { config } = require("dotenv");
+const cors = require("cors");
+
 config();
 
-console.log(`🔄 Ligando servidor`)
+const app = express();
+
 console.log(`🔄 Ligando servidor`)
 
-router.use(cors());
-router.use(json({ limit: "500mb" }));
-router.use(urlencoded({ extended: true }));
-router.use('/', require("./routes"));
-module.exports.handler = serverless(router);
-router.listen(process.env.PORT || 3001, () => {
-    console.log(`✅ Server rodando na porta ${process.env.PORT || 3001}`)
-})
+app.use(cors());
+app.use(json({ limit: "500mb" }));
+app.use(urlencoded({ extended: true }));
+app.use('/', require("./routes"));
+
+if (process.env.NODE_ENV !== 'production') {
+    const port = process.env.PORT || 3001;
+    app.listen(port, () => {
+        console.log(`✅ Server rodando na porta ${port}`);
+    });
+}
+
+
+module.exports = app;
