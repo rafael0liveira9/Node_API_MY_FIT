@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model client {
+  id              Int       @id @default(autoincrement())
+  name            String    @db.VarChar(100)
+  nick            String?   @db.VarChar(100)
+  phone           String?   @db.VarChar(100)
+  photo           String?   @db.VarChar(255)
+  backgroundImage String?   @db.VarChar(255)
+  description     String?   @db.VarChar(255)
+  objective       String?   @db.VarChar(255)
+  instagram       String?   @db.VarChar(255)
+  createdAt       DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt       DateTime? @db.Timestamp(0)
+  deletedAt       DateTime? @db.Timestamp(0)
+  document        String?   @db.VarChar(100)
+  cref            String?   @db.VarChar(100)
+  situation       Int       @default(1) @db.TinyInt
+  user            user[]
+}
+
+model type {
+  id          Int     @id @default(autoincrement())
+  name        String  @db.VarChar(100)
+  description String? @db.VarChar(255)
+  situation   Int     @default(1) @db.TinyInt
+  user        user[]
+}
+
+model user {
+  id            Int       @id @default(autoincrement())
+  email         String    @db.VarChar(100)
+  password      String    @db.VarChar(255)
+  tip           String?   @db.VarChar(255)
+  reply         String    @db.VarChar(255)
+  questionId    Int
+  clientId      Int
+  typeId        Int
+  lastPaymentId Int?
+  createdAt     DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt     DateTime? @db.Timestamp(0)
+  deletedAt     DateTime? @db.Timestamp(0)
+  situation     Int       @default(1) @db.TinyInt
+  socialCode    String?   @db.VarChar(50)
+  inputCode     String?   @db.Char(10)
+  questions     question  @relation(fields: [questionId], references: [id], onUpdate: Restrict, map: "user_questions_FK")
+  type          type      @relation(fields: [typeId], references: [id], onUpdate: Restrict, map: "user_type_FK")
+  client        client    @relation(fields: [clientId], references: [id])
+
+  @@index([questionId], map: "user_questions_FK")
+  @@index([typeId], map: "user_type_FK")
+}
+
+model question {
+  id        Int    @id @default(autoincrement())
+  question  String @db.VarChar(255)
+  situation Int    @default(1) @db.TinyInt
+  user      user[]
+}
