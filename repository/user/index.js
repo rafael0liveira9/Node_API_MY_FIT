@@ -74,22 +74,17 @@ const GetUserById = async (req, res) => {
                 situation: 1,
                 deletedAt: null
             },
-            select: {
-                id: true,
-                email: true,
-                lastPaymentId: true,
-                situation: true,
-                createdAt: true,
-                updatedAt: true,
-                deletedAt: true,
+            include: {
                 type: {
                     select: {
                         id: true,
-                        name: true
-                    }
-                }
-            }
-        })
+                        name: true,
+                    },
+                },
+                client: true,
+            },
+        });
+
 
 
         if (data) {
