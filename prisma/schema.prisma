@@ -23,6 +23,8 @@ model client {
   document        String?   @db.VarChar(100)
   cref            String?   @db.VarChar(100)
   situation       Int       @default(1) @db.TinyInt
+  gender          Int?      @db.TinyInt
+  birthDate       DateTime? @db.Timestamp(0)
   user            user[]
 }
 
@@ -35,27 +37,30 @@ model type {
 }
 
 model user {
-  id            Int       @id @default(autoincrement())
-  email         String    @db.VarChar(100)
-  password      String    @db.VarChar(255)
-  tip           String?   @db.VarChar(255)
-  reply         String    @db.VarChar(255)
-  questionId    Int
+  id            Int        @id @default(autoincrement())
+  email         String     @db.VarChar(100)
+  password      String     @db.VarChar(255)
+  tip           String?    @db.VarChar(255)
+  reply         String?    @db.VarChar(255)
+  questionId    Int?
   clientId      Int
   typeId        Int
   lastPaymentId Int?
-  createdAt     DateTime  @default(now()) @db.Timestamp(0)
-  updatedAt     DateTime? @db.Timestamp(0)
-  deletedAt     DateTime? @db.Timestamp(0)
-  situation     Int       @default(1) @db.TinyInt
-  socialCode    String?   @db.VarChar(50)
-  inputCode     String?   @db.Char(10)
-  questions     question  @relation(fields: [questionId], references: [id], onUpdate: Restrict, map: "user_questions_FK")
-  type          type      @relation(fields: [typeId], references: [id], onUpdate: Restrict, map: "user_type_FK")
-  client        client    @relation(fields: [clientId], references: [id])
+  createdAt     DateTime   @default(now()) @db.Timestamp(0)
+  updatedAt     DateTime?  @db.Timestamp(0)
+  deletedAt     DateTime?  @db.Timestamp(0)
+  situation     Int        @default(1) @db.TinyInt
+  socialCode    String?    @db.VarChar(50)
+  inputCode     String?    @db.Char(10)
+  exercise      exercise[]
+  training      training[]
+  client        client     @relation(fields: [clientId], references: [id], onUpdate: Restrict, map: "user_client_FK")
+  questions     question?  @relation(fields: [questionId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "user_questions_FK")
+  type          type       @relation(fields: [typeId], references: [id], onUpdate: Restrict, map: "user_type_FK")
 
   @@index([questionId], map: "user_questions_FK")
   @@index([typeId], map: "user_type_FK")
+  @@index([clientId], map: "user_client_FK")
 }
 
 model question {
@@ -63,4 +68,91 @@ model question {
   question  String @db.VarChar(255)
   situation Int    @default(1) @db.TinyInt
   user      user[]
+}
+
+model exercise {
+  id            Int          @id @default(autoincrement())
+  name          String       @db.VarChar(100)
+  description   String?      @db.VarChar(100)
+  image         String?      @db.VarChar(255)
+  animation     String?      @db.VarChar(255)
+  video         String?      @db.VarChar(255)
+  createdAt     DateTime     @default(now()) @db.Timestamp(0)
+  updatedAt     DateTime?    @db.Timestamp(0)
+  deletedAt     DateTime?    @db.Timestamp(0)
+  situation     Int          @default(1) @db.TinyInt
+  authorId      Int?
+  groupMuscleId Int?
+  muscleGroup   muscleGroup? @relation(fields: [groupMuscleId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "exercise_muscleGroup_FK")
+  user          user?        @relation(fields: [authorId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "exercise_user_FK")
+  series        series[]
+
+  @@index([authorId], map: "exercise_user_FK")
+  @@index([groupMuscleId], map: "exercise_muscleGroup_FK")
+}
+
+model series {
+  id              Int       @id @default(autoincrement())
+  stepId          Int
+  exerciseId      Int?
+  amount          Int       @default(1) @db.TinyInt
+  isometry        Int       @default(0) @db.TinyInt
+  bisetExerciseId Int?
+  difficulty      String?   @default("[\"0\"]") @db.VarChar(255)
+  situation       Int       @default(1) @db.TinyInt
+  createdAt       DateTime? @default(now()) @db.Timestamp(0)
+  updatedAt       DateTime? @db.Timestamp(0)
+  deletedAt       DateTime? @db.Timestamp(0)
+  interval        Int?
+  addSet          Int?      @db.TinyInt
+  exercise        exercise? @relation(fields: [exerciseId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "series_exercise_FK")
+  step            step      @relation(fields: [stepId], references: [id], onUpdate: Restrict, map: "series_step_FK")
+
+  @@index([exerciseId], map: "series_exercise_FK")
+  @@index([stepId], map: "series_step_FK")
+}
+
+model step {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(100)
+  description String?   @db.VarChar(100)
+  priority    Int       @default(1) @db.TinyInt
+  situation   Int       @default(1) @db.TinyInt
+  trainingId  Int
+  createdAt   DateTime? @default(now()) @db.Timestamp(0)
+  updatedAt   DateTime? @db.Timestamp(0)
+  deletedAt   DateTime? @db.Timestamp(0)
+  series      series[]
+  training    training  @relation(fields: [trainingId], references: [id], onUpdate: Restrict, map: "step_training_FK")
+
+  @@index([trainingId], map: "step_training_FK")
+}
+
+model training {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(100)
+  description String?   @db.VarChar(255)
+  level       Int       @default(1) @db.TinyInt
+  authorId    Int
+  url         String?   @db.VarChar(255)
+  createdAt   DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt   DateTime? @db.Timestamp(0)
+  deletedAt   DateTime? @db.Timestamp(0)
+  situation   Int       @default(1) @db.TinyInt
+  packageId   Int?
+  step        step[]
+  user        user      @relation(fields: [authorId], references: [id], onUpdate: Restrict, map: "training_user_FK")
+
+  @@index([authorId], map: "training_user_FK")
+}
+
+model muscleGroup {
+  id          Int        @id @default(autoincrement())
+  name        String     @db.VarChar(100)
+  description String?    @db.VarChar(255)
+  situation   Int        @default(1) @db.TinyInt
+  createdAt   DateTime   @default(now()) @db.Timestamp(0)
+  updatedAt   DateTime?  @db.Timestamp(0)
+  deletedAt   DateTime?  @db.Timestamp(0)
+  exercise    exercise[]
 }

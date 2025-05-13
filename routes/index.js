@@ -2,6 +2,7 @@ const { Router, json, urlencoded } = require('express'),
     moment = require('moment'),
     multer = require('multer'),
     user = require('../repository/user'),
+    exercises = require('../repository/exercises'),
     s3 = require('../repository/s3'),
     router = Router();
 
@@ -25,6 +26,13 @@ router.get('/user/:id', async (req, res) => user.GetUserById(req, res)),
     router.put('/suspend-user', async (req, res) => user.SuspendUser(req, res)),
     router.put('/delete-user/:id', async (req, res) => user.DeleteUser(req, res));
 
-
+// *********************************************************************************************** EXERCISES ROUTES
+router.get('/groups', async (req, res) => exercises.GetAllGroups(req, res)),
+    router.get('/exercises/:id', async (req, res) => exercises.GetExercisesByGroup(req, res)),
+    router.post('/exercise', async (req, res) => exercises.PostExercise(req, res)),
+    router.post('/exercise-on-group', async (req, res) => exercises.PostExercisesOnGroup(req, res)),
+    router.post('/step', async (req, res) => exercises.PostStep(req, res)),
+    router.post('/serie', async (req, res) => exercises.PostSerie(req, res)),
+    router.post('/training', async (req, res) => exercises.PostTraining(req, res));
 
 module.exports = router

@@ -35,6 +35,7 @@ const GetUserById = async (req, res) => {
             createdAt: true,
             updatedAt: true,
             deletedAt: true,
+            client: true,
             type: {
                 select: {
                     id: true,
@@ -75,13 +76,13 @@ const GetUserById = async (req, res) => {
                 deletedAt: null
             },
             include: {
+                client: true,
                 type: {
                     select: {
                         id: true,
                         name: true,
                     },
                 },
-                client: true,
             },
         });
 
@@ -121,15 +122,6 @@ const GetUserById = async (req, res) => {
             const client = await p.client.create({
                 data: {
                     name: userData.name,
-                    description: userData.description,
-                    nick: userData.nick,
-                    objective: userData.objective,
-                    photo: userData.photo,
-                    phone: userData.phone,
-                    backgroundImage: userData.backgroundImage,
-                    instagram: userData.instagram,
-                    cref: userData.cref,
-                    document: userData.document,
                 }
             });
 
@@ -138,12 +130,8 @@ const GetUserById = async (req, res) => {
                     data: {
                         email: userData.email,
                         password: hashSync(userData.password, 8),
-                        tip: userData.tip,
-                        reply: userData.reply,
                         typeId: parseInt(type),
-                        questionId: 1,
                         clientId: client.id,
-                        lastPaymentId: 1
                     }
                 })
 
@@ -270,6 +258,19 @@ const GetUserById = async (req, res) => {
             }
         })
 
+        const userEdited = await p.user.update({
+            where: {
+                id: alreadyUser?.client?.id
+            },
+            data: {
+                email: userData.email ? userData.email : alreadyUser.email,
+                tip: userData.tip ? userData.tip : alreadyUser.tip,
+                reply: userData.reply ? userData.reply : alreadyUser.reply,
+                questionId: userData.questionId ? userData.questionId : alreadyUser.questionId,
+                updatedAt: new Date()
+            }
+        });
+
         const client = await p.client.update({
             where: {
                 id: alreadyUser?.client?.id
@@ -281,26 +282,18 @@ const GetUserById = async (req, res) => {
                 objective: userData.objective ? userData.objective : alreadyUser.client.objective,
                 phone: userData.phone ? userData.phone : alreadyUser.client.phone,
                 instagram: userData.instagram ? userData.instagram : alreadyUser.client.instagram,
+                gender: userData.gender ? userData.gender : alreadyUser.client.gender,
+                birthDate: userData.birthDate ? userData.birthDate : alreadyUser.client.birthDate,
+                document: userData.document ? userData.document : alreadyUser.client.document,
                 updatedAt: new Date()
             }
         });
 
-        if (client) {
+        if (client || userEdited) {
             await p.$disconnect();
 
-            alreadyUser.token = sign({
-                id: alreadyUser.id,
-                name: client.name,
-                nick: client.nick,
-                email: alreadyUser.email,
-                type: alreadyUser.typeId
-            }, process.env.SECRET_CLIENT_KEY)
-
             return res.status(201).json({
-                data: {
-                    user: alreadyUser,
-                    client: client
-                }
+                message: "Usuário e cliente editados com sucesso"
             });
         } else {
             await p.$disconnect();
@@ -410,6 +403,8 @@ const GetUserById = async (req, res) => {
                 instagram: 'removed',
                 document: 'removed',
                 cref: 'removed',
+                gender: null,
+                birthDate: null,
                 situation: 0,
                 deletedAt: new Date()
             }
@@ -425,6 +420,9 @@ const GetUserById = async (req, res) => {
                     password: 'removed',
                     socialCode: 'removed',
                     inputCode: 'removed',
+                    tip: 'removed',
+                    reply: 'removed',
+                    questionId: null,
                     situation: 0,
                     deletedAt: new Date()
                 }
@@ -455,7 +453,6 @@ const GetUserById = async (req, res) => {
     PhotoUpdate = async (req, res) => {
         let editId;
         let result;
-        let client;
         const file = req.file;
         const path = req.body?.path || 'error-path';
         const adminCheck = await jwtUncrypt(req.headers.authorization)
@@ -522,7 +519,6 @@ const GetUserById = async (req, res) => {
     backgroundImageUpdate = async (req, res) => {
         let editId;
         let result;
-        let client;
         const file = req.file;
         const path = req.body?.path || 'error-path';
         const adminCheck = await jwtUncrypt(req.headers.authorization)

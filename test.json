@@ -1,0 +1,46 @@
+{
+    "name": "Nome do treino",
+    "description": "Descrição do treino",
+    "level": 3,
+    "url": "https://exemplo.com/treino.jpg",
+    "steps": [
+        {
+            "name": "Treino A",
+            "description": "Descrição do step",
+            "priority": 1,
+            "series": [
+                {
+                    "stepId": 1,
+                    "exerciseId": 123,
+                    "difficulty": "['20', '30']",
+                    "biset": 0,
+                    "bisetExerciseId": null,
+                    "interval": 30
+                },
+                {
+                    "stepId": 1,
+                    "exerciseId": 124,
+                    "difficulty": "['30', '30']",
+                    "biset": 0,
+                    "bisetExerciseId": null,
+                    "interval": 30
+                }
+            ]
+        },
+        {
+            "name": "Treino B",
+            "description": "Descrição do step",
+            "priority": 1,
+            "series": [
+                {
+                    "stepId": 1,
+                    "exerciseId": 123,
+                    "difficulty": "['20', '30']",
+                    "biset": 1,
+                    "bisetExerciseId": 221,
+                    "interval": 60
+                }
+            ]
+        }
+    ]
+}
