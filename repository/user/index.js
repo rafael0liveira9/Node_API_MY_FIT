@@ -289,6 +289,7 @@ const GetUserById = async (req, res) => {
             }
         });
 
+        console.log('client', client, userEdited)
         if (client || userEdited) {
             await p.$disconnect();
 
