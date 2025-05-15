@@ -382,8 +382,8 @@ const PostExercise = async (req, res) => {
                 message: "Usuário não encontrado."
             });
         } else {
-            if (adminCheck?.user?.type == 1 && !!req?.body?.id) {
-                editId = req.body.id
+            if (!!req?.body?.id) {
+                editId = parseInt(req.body.id)
             } else if (!!adminCheck?.user?.id) {
                 editId = adminCheck?.user?.id
             } else {
