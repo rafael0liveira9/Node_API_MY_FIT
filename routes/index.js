@@ -29,10 +29,14 @@ router.get('/user/:id', async (req, res) => user.GetUserById(req, res)),
 // *********************************************************************************************** EXERCISES ROUTES
 router.get('/groups', async (req, res) => exercises.GetAllGroups(req, res)),
     router.get('/exercises/:id', async (req, res) => exercises.GetExercisesByGroup(req, res)),
+    router.get('/trainings', async (req, res) => exercises.GetMyTrainings(req, res)),
+    router.get('/training/:id', async (req, res) => exercises.GetTrainingById(req, res)),
     router.post('/exercise', async (req, res) => exercises.PostExercise(req, res)),
     router.post('/exercise-on-group', async (req, res) => exercises.PostExercisesOnGroup(req, res)),
     router.post('/step', async (req, res) => exercises.PostStep(req, res)),
     router.post('/serie', async (req, res) => exercises.PostSerie(req, res)),
-    router.post('/training', async (req, res) => exercises.PostTraining(req, res));
+    router.post('/training', async (req, res) => exercises.PostTraining(req, res)),
+    router.put('/photo-training', upload.single('file'), async (req, res) => exercises.TrainingPhotoUpdate(req, res)),
+    router.put('/training', async (req, res) => exercises.PutTraining(req, res));
 
 module.exports = router

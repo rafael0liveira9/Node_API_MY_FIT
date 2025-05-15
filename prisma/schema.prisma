@@ -8,24 +8,26 @@ datasource db {
 }
 
 model client {
-  id              Int       @id @default(autoincrement())
-  name            String    @db.VarChar(100)
-  nick            String?   @db.VarChar(100)
-  phone           String?   @db.VarChar(100)
-  photo           String?   @db.VarChar(255)
-  backgroundImage String?   @db.VarChar(255)
-  description     String?   @db.VarChar(255)
-  objective       String?   @db.VarChar(255)
-  instagram       String?   @db.VarChar(255)
-  createdAt       DateTime  @default(now()) @db.Timestamp(0)
-  updatedAt       DateTime? @db.Timestamp(0)
-  deletedAt       DateTime? @db.Timestamp(0)
-  document        String?   @db.VarChar(100)
-  cref            String?   @db.VarChar(100)
-  situation       Int       @default(1) @db.TinyInt
-  gender          Int?      @db.TinyInt
-  birthDate       DateTime? @db.Timestamp(0)
-  user            user[]
+  id                                                            Int                   @id @default(autoincrement())
+  name                                                          String                @db.VarChar(100)
+  nick                                                          String?               @db.VarChar(100)
+  phone                                                         String?               @db.VarChar(100)
+  photo                                                         String?               @db.VarChar(255)
+  backgroundImage                                               String?               @db.VarChar(255)
+  description                                                   String?               @db.VarChar(255)
+  objective                                                     String?               @db.VarChar(255)
+  instagram                                                     String?               @db.VarChar(255)
+  createdAt                                                     DateTime              @default(now()) @db.Timestamp(0)
+  updatedAt                                                     DateTime?             @db.Timestamp(0)
+  deletedAt                                                     DateTime?             @db.Timestamp(0)
+  document                                                      String?               @db.VarChar(100)
+  cref                                                          String?               @db.VarChar(100)
+  situation                                                     Int                   @default(1) @db.TinyInt
+  gender                                                        Int?                  @db.TinyInt
+  birthDate                                                     DateTime?             @db.Timestamp(0)
+  trainingAssignments_trainingAssignments_clientIdToclient      trainingAssignments[] @relation("trainingAssignments_clientIdToclient")
+  trainingAssignments_trainingAssignments_responsibleIdToclient trainingAssignments[] @relation("trainingAssignments_responsibleIdToclient")
+  user                                                          user[]
 }
 
 model type {
@@ -129,19 +131,21 @@ model step {
 }
 
 model training {
-  id          Int       @id @default(autoincrement())
-  name        String    @db.VarChar(100)
-  description String?   @db.VarChar(255)
-  level       Int       @default(1) @db.TinyInt
-  authorId    Int
-  url         String?   @db.VarChar(255)
-  createdAt   DateTime  @default(now()) @db.Timestamp(0)
-  updatedAt   DateTime? @db.Timestamp(0)
-  deletedAt   DateTime? @db.Timestamp(0)
-  situation   Int       @default(1) @db.TinyInt
-  packageId   Int?
-  step        step[]
-  user        user      @relation(fields: [authorId], references: [id], onUpdate: Restrict, map: "training_user_FK")
+  id                  Int                   @id @default(autoincrement())
+  name                String                @db.VarChar(100)
+  description         String?               @db.VarChar(255)
+  level               Int                   @default(1) @db.TinyInt
+  authorId            Int
+  url                 String?               @db.VarChar(255)
+  createdAt           DateTime              @default(now()) @db.Timestamp(0)
+  updatedAt           DateTime?             @db.Timestamp(0)
+  deletedAt           DateTime?             @db.Timestamp(0)
+  situation           Int                   @default(1) @db.TinyInt
+  packageId           Int?
+  photo               String?               @db.VarChar(255)
+  step                step[]
+  user                user                  @relation(fields: [authorId], references: [id], onUpdate: Restrict, map: "training_user_FK")
+  trainingAssignments trainingAssignments[]
 
   @@index([authorId], map: "training_user_FK")
 }
@@ -155,4 +159,24 @@ model muscleGroup {
   updatedAt   DateTime?  @db.Timestamp(0)
   deletedAt   DateTime?  @db.Timestamp(0)
   exercise    exercise[]
+}
+
+model trainingAssignments {
+  id                                               Int       @id @default(autoincrement())
+  clientId                                         Int
+  trainingId                                       Int
+  responsibleId                                    Int?
+  situation                                        Int       @default(1) @db.TinyInt
+  expirationDate                                   DateTime? @db.DateTime(0)
+  createdAt                                        DateTime? @default(now()) @db.DateTime(0)
+  updatedAt                                        DateTime? @db.DateTime(0)
+  deletedAt                                        DateTime? @db.DateTime(0)
+  CompanyResposibleId                              Int?
+  client_trainingAssignments_clientIdToclient      client    @relation("trainingAssignments_clientIdToclient", fields: [clientId], references: [id], onUpdate: Restrict, map: "trainingAssignments_client_FK")
+  client_trainingAssignments_responsibleIdToclient client?   @relation("trainingAssignments_responsibleIdToclient", fields: [responsibleId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "trainingAssignments_client_FK_1")
+  training                                         training  @relation(fields: [trainingId], references: [id], onUpdate: Restrict, map: "trainingAssignments_training_FK")
+
+  @@index([clientId], map: "trainingAssignments_client_FK")
+  @@index([responsibleId], map: "trainingAssignments_client_FK_1")
+  @@index([trainingId], map: "trainingAssignments_training_FK")
 }

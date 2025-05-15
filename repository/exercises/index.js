@@ -161,7 +161,6 @@ const PostExercise = async (req, res) => {
             throw error;
         }
     },
-
     PostTraining = async (req, res) => {
         const user = await jwtUncrypt(req.headers.authorization);
         const userId = user?.user?.id;
@@ -171,12 +170,23 @@ const PostExercise = async (req, res) => {
             return res.status(401).json({ message: "Usuário não encontrado." });
         }
 
-        const { name, description, level, url } = req.body;
+        const { name, description, level, url, photo } = req.body;
 
         try {
+            const alreadyUser = await p.user.findFirst({
+                where: {
+                    id: userId,
+                    situation: 1,
+                    deletedAt: null
+                },
+                include: {
+                    client: true
+                }
+            });
+
             const alreadyHave = await p.training.findFirst({
                 where: {
-                    name,
+                    name: name,
                     authorId: userId,
                     deletedAt: null,
                     situation: 1
@@ -190,17 +200,98 @@ const PostExercise = async (req, res) => {
             }
             const newTraining = await p.training.create({
                 data: {
-                    name,
-                    description,
-                    level,
+                    name: name,
+                    description: description,
+                    level: level,
                     url: url || '',
+                    photo: photo || '',
                     authorId: userId
                 }
             });
+
+
+            const newAssignment = await p.trainingAssignments.create({
+                data: {
+                    clientId: alreadyUser.client.id,
+                    trainingId: newTraining.id
+                }
+            });
+
+            if (newAssignment && newTraining) {
+                return res.status(200).json({
+                    message: "Treino cadastrado com sucesso",
+                    newAssignment: newAssignment
+                });
+            } else {
+                console.log(newAssignment, newTraining)
+            }
+
+
+
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({
+                message: "Erro ao criar novo treino"
+            });
+        } finally {
+            await p.$disconnect();
+        }
+    },
+    PutTraining = async (req, res) => {
+        const user = await jwtUncrypt(req.headers.authorization);
+        const userId = user?.user?.id;
+
+
+        if (!userId) {
+            return res.status(401).json({ message: "Usuário não encontrado." });
+        }
+
+        const { id, name, description, level, url, photo } = req.body;
+
+        try {
+            const alreadyHave = await p.training.findFirst({
+                where: {
+                    id: id,
+                    authorId: userId,
+                    deletedAt: null,
+                    situation: 1
+                }
+            });
+
+            if (!alreadyHave) {
+                const newTraining = await p.training.create({
+                    data: {
+                        name: name,
+                        description: description,
+                        level: level,
+                        url: url || '',
+                        photo: photo || '',
+                        authorId: userId
+                    }
+                });
+                return res.status(200).json({
+                    message: "Treino cadastrado com sucesso",
+                    exercise: newTraining
+                });
+            }
+
+            const newTraining = await p.training.update({
+                where: {
+                    id: alreadyHave.id
+                },
+                data: {
+                    name: name,
+                    description: description,
+                    level: level,
+                    url: url,
+                    photo: photo
+                }
+            });
             return res.status(200).json({
-                message: "Treino cadastrado com sucesso",
+                message: "Treino salvo com sucesso",
                 exercise: newTraining
             });
+
 
         } catch (error) {
             console.error(error);
@@ -280,6 +371,69 @@ const PostExercise = async (req, res) => {
         }
 
     },
+    TrainingPhotoUpdate = async (req, res) => {
+        let editId;
+        let result;
+        const file = req.file;
+        const path = req.body?.path || 'error-path';
+        const adminCheck = await jwtUncrypt(req.headers.authorization)
+
+
+        if (!adminCheck?.user?.type) {
+            return res.status(401).json({
+                message: "Usuário não encontrado."
+            });
+        } else {
+            if (adminCheck?.user?.type == 1 && !!req?.body?.id) {
+                editId = req.body.id
+            } else if (!!adminCheck?.user?.id) {
+                editId = adminCheck?.user?.id
+            } else {
+                return res.status(401).json({
+                    message: "Usuário não encontrado."
+                });
+            }
+        }
+
+        const alreadyUser = await p.training.findFirst({
+            where: {
+                id: editId
+            }
+        })
+
+        try {
+            result = await s3.uploadImage(file, path);
+
+            if (result) {
+                client = await p.training.update({
+                    where: {
+                        id: alreadyUser?.id
+                    },
+                    data: {
+                        photo: result.Location,
+                        updatedAt: new Date()
+                    }
+                });
+
+                await p.$disconnect();
+                return res.status(201).json({
+                    url: result.Location
+                });
+
+            } else {
+                await p.$disconnect();
+                return res.status(500).json({
+                    message: "Erro ao inserir imagem no s3 "
+                });
+            }
+
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: 'Erro no upload' });
+        }
+
+
+    },
     PostExercisesOnGroup = async (req, res) => {
 
         const adminCheck = await jwtUncrypt(req.headers.authorization)
@@ -315,7 +469,100 @@ const PostExercise = async (req, res) => {
         await p.$disconnect();
         return res.status(201).json(finallyResponse);
 
+    },
+    GetMyTrainings = async (req, res) => {
+
+        const adminCheck = await jwtUncrypt(req.headers.authorization)
+
+        if (!adminCheck?.user?.email) {
+            return res.status(401).json({
+                message: "Usuário não encontrado."
+            });
+        }
+
+        try {
+            const alreadyUser = await p.user.findFirst({
+                where: {
+                    id: adminCheck?.user?.id,
+                    situation: 1,
+                    deletedAt: null
+                },
+                include: {
+                    client: true
+                }
+            });
+
+            const data = await p.trainingAssignments.findMany({
+                where: {
+                    clientId: alreadyUser.client.id,
+                    situation: 1,
+                    deletedAt: null
+                }
+            });
+
+            if (data) {
+                await p.$disconnect();
+                return res.status(201).json(data);
+            } else {
+                await p.$disconnect();
+                return res.status(401).json({
+                    message: "Nenhum treino encontrado."
+                });
+            }
+        } catch (error) {
+            await p.$disconnect();
+            return res.status(401).json({
+                message: "Error: Nenhum treino encontrado."
+            });
+        }
+
+    },
+    GetTrainingById = async (req, res) => {
+
+        const adminCheck = await jwtUncrypt(req.headers.authorization)
+
+        if (!adminCheck?.user) {
+            return res.status(403).json({
+                message: "Usuário não autorizado."
+            });
+        }
+
+        const { id } = req.params;
+        const data = await p.trainingAssignments.findFirst({
+            where: {
+                id: parseInt(id),
+                situation: 1,
+                deletedAt: null
+            },
+            include: {
+                training: {
+                    include: {
+                        step: {
+                            include: {
+                                series: {
+                                    include: {
+                                        exercise: true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        })
+
+
+        if (data) {
+            await p.$disconnect();
+            return res.status(201).json(data);
+        } else {
+            await p.$disconnect();
+            return res.status(401).json({
+                message: "Usuário não cadastrado."
+            });
+        }
+
     }
 
 
-module.exports = { PostExercise, PostTraining, PostStep, PostSerie, GetAllGroups, GetExercisesByGroup, PostExercisesOnGroup };
+module.exports = { PostExercise, PostTraining, PostStep, PostSerie, GetAllGroups, GetExercisesByGroup, PostExercisesOnGroup, PutTraining, TrainingPhotoUpdate, GetMyTrainings, GetTrainingById };
