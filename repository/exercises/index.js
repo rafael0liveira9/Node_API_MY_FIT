@@ -34,6 +34,16 @@ const PostExercise = async (req, res) => {
             message: "Usuário não encontrado."
         });
     }
+    const alreadyUser = await p.user.findFirst({
+        where: {
+            id: user?.user?.id,
+            situation: 1,
+            deletedAt: null
+        },
+        include: {
+            client: true
+        }
+    });
 
     if (alreadyHave) {
 
@@ -55,7 +65,7 @@ const PostExercise = async (req, res) => {
                 image: req.body.image || '',
                 animation: req.body.animation || '',
                 video: req.body.video || '',
-                authorId: user?.user?.id,
+                authorId: alreadyUser?.client?.id,
                 groupMuscleId: req.body.groupMuscleId
             }
         })
@@ -187,7 +197,7 @@ const PostExercise = async (req, res) => {
             const alreadyHave = await p.training.findFirst({
                 where: {
                     name: name,
-                    authorId: userId,
+                    authorId: alreadyUser.client.id,
                     deletedAt: null,
                     situation: 1
                 }
@@ -205,7 +215,7 @@ const PostExercise = async (req, res) => {
                     level: level,
                     url: url || '',
                     photo: photo || '',
-                    authorId: userId
+                    authorId: alreadyUser.client.id
                 }
             });
 
@@ -259,20 +269,8 @@ const PostExercise = async (req, res) => {
             });
 
             if (!alreadyHave) {
-                const newTraining = await p.training.create({
-                    data: {
-                        name: name,
-                        description: description,
-                        level: level,
-                        url: url || '',
-                        photo: photo || '',
-                        authorId: userId
-                    }
-                });
-                return res.status(200).json({
-                    message: "Treino cadastrado com sucesso",
-                    exercise: newTraining
-                });
+                const x = async () => await PostTraining(req, res);
+                return x
             }
 
             const newTraining = await p.training.update({
