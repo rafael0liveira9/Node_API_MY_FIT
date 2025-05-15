@@ -370,7 +370,6 @@ const PostExercise = async (req, res) => {
 
     },
     TrainingPhotoUpdate = async (req, res) => {
-        let editId;
         let result;
         const file = req.file;
         const path = req.body?.path || 'error-path';
@@ -381,21 +380,11 @@ const PostExercise = async (req, res) => {
             return res.status(401).json({
                 message: "Usuário não encontrado."
             });
-        } else {
-            if (!!req?.body?.id) {
-                editId = parseInt(req.body.id)
-            } else if (!!adminCheck?.user?.id) {
-                editId = adminCheck?.user?.id
-            } else {
-                return res.status(401).json({
-                    message: "Usuário não encontrado."
-                });
-            }
         }
 
         const alreadyUser = await p.training.findFirst({
             where: {
-                id: editId
+                id: parseInt(req.body.id)
             }
         })
 
