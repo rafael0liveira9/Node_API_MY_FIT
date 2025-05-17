@@ -134,6 +134,106 @@ const PostExercise = async (req, res) => {
             throw error;
         }
     },
+    PutStep = async (req, res) => {
+        const user = await jwtUncrypt(req.headers.authorization);
+        const userId = user?.user?.id;
+
+
+        if (!userId) {
+            return res.status(401).json({ message: "Usuário não encontrado." });
+        }
+
+
+        try {
+            const alreadyHave = await p.step.findFirst({
+                where: {
+                    id: req.body.id,
+                    deletedAt: null,
+                    situation: 1
+                }
+            });
+
+            if (!alreadyHave) {
+                const x = async () => await PostStep(req, res);
+                return x
+            }
+
+            const newTraining = await p.step.update({
+                where: {
+                    id: alreadyHave.id
+                },
+                data: {
+                    id: req.body.id,
+                    name: req.body.name || alreadyHave.name,
+                    description: req.body.description || alreadyHave.description,
+                    priority: req.body.priority || alreadyHave.priority,
+                    trainingId: req.body.trainingId || alreadyHave.trainingId
+                }
+            });
+            return res.status(200).json({
+                status: 200,
+                message: "Step salvo com sucesso",
+                exercise: newTraining
+            });
+
+
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({
+                message: "Erro ao criar novo treino"
+            });
+        } finally {
+            await p.$disconnect();
+        }
+    },
+    DeleteStep = async (req, res) => {
+        const user = await jwtUncrypt(req.headers.authorization);
+        const userId = user?.user?.id;
+
+
+        if (!userId) {
+            return res.status(401).json({ message: "Usuário não encontrado." });
+        }
+
+
+        try {
+            const alreadyHave = await p.step.findFirst({
+                where: {
+                    id: req.body.id,
+                    deletedAt: null,
+                    situation: 1
+                }
+            });
+
+            if (!alreadyHave) {
+                return res.status(401).json({ message: "step não encontrado." });
+            }
+
+            const newTraining = await p.step.update({
+                where: {
+                    id: alreadyHave.id
+                },
+                data: {
+                    situation: 1,
+                    deletedAt: new Date()
+                }
+            });
+            return res.status(200).json({
+                status: 200,
+                message: "Step deletado com sucesso",
+                exercise: newTraining
+            });
+
+
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({
+                message: "Erro ao criar novo treino"
+            });
+        } finally {
+            await p.$disconnect();
+        }
+    },
     PostSerie = async (req, res) => {
         const user = await jwtUncrypt(req.headers.authorization);
         const userId = user?.user?.id;
@@ -295,6 +395,57 @@ const PostExercise = async (req, res) => {
             console.error(error);
             return res.status(500).json({
                 message: "Erro ao criar novo treino"
+            });
+        } finally {
+            await p.$disconnect();
+        }
+    },
+    DeleteTraining = async (req, res) => {
+        const user = await jwtUncrypt(req.headers.authorization);
+        const userId = user?.user?.id;
+
+
+        if (!userId) {
+            return res.status(401).json({ message: "Usuário não encontrado." });
+        }
+
+        const { id, name, description, level, url, photo } = req.body;
+
+        try {
+            const alreadyHave = await p.training.findFirst({
+                where: {
+                    id: id,
+                    authorId: userId,
+                    deletedAt: null,
+                    situation: 1
+                }
+            });
+
+            if (!alreadyHave) {
+                return res.status(401).json({
+                    message: "Falha ao deletrar, treino não existe!"
+                });
+            }
+
+            const newTraining = await p.training.update({
+                where: {
+                    id: alreadyHave.id
+                },
+                data: {
+                    situation: 1,
+                    deletedAt: new Date()
+                }
+            });
+            return res.status(200).json({
+                status: 200,
+                message: "Treino deletado com sucesso"
+            });
+
+
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({
+                message: "Erro ao deletar treino"
             });
         } finally {
             await p.$disconnect();
@@ -552,4 +703,4 @@ const PostExercise = async (req, res) => {
     }
 
 
-module.exports = { PostExercise, PostTraining, PostStep, PostSerie, GetAllGroups, GetExercisesByGroup, PostExercisesOnGroup, PutTraining, TrainingPhotoUpdate, GetMyTrainings, GetTrainingById };
+module.exports = { PostExercise, PostTraining, PostStep, PostSerie, GetAllGroups, GetExercisesByGroup, PostExercisesOnGroup, PutTraining, TrainingPhotoUpdate, GetMyTrainings, GetTrainingById, DeleteTraining, PutStep };
