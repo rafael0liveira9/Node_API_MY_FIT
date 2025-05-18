@@ -504,6 +504,16 @@ const PostExercise = async (req, res) => {
             where: {
                 situation: 1,
                 deletedAt: null
+            },
+            select: {
+                id: true,
+                name: true,
+                groupMuscleId: true,
+                description: true,
+                image: true,
+                authorId: true,
+                video: true,
+
             }
         })
 
