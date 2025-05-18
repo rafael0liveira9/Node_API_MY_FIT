@@ -22,6 +22,8 @@ const PostExercise = async (req, res) => {
 
     const user = await jwtUncrypt(req.headers.authorization)
 
+    console.log(req.body.name)
+
     const alreadyHave = await p.exercise.findFirst({
         where: {
             name: req.body.name,
@@ -624,10 +626,12 @@ const PostExercise = async (req, res) => {
                     isGroup: true
                 }, req)
 
-                if (!response.already) {
-                    finallyResponse.push(response)
-                } else {
+                console.log('response', !!response.already, response)
+
+                if (!!response.already) {
                     console.log(`Erro ao criar exercicio ${req.body[index]}, provavelmente ja existe`)
+                } else {
+                    finallyResponse.push(response)
                 }
             }
         }
