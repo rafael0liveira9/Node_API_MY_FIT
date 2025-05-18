@@ -28,6 +28,7 @@ router.get('/user/:id', async (req, res) => user.GetUserById(req, res)),
 
 // *********************************************************************************************** EXERCISES ROUTES
 router.get('/groups', async (req, res) => exercises.GetAllGroups(req, res)),
+    router.get('/exercises', async (req, res) => exercises.GetAllExercises(req, res)),
     router.get('/exercises/:id', async (req, res) => exercises.GetExercisesByGroup(req, res)),
     router.get('/trainings', async (req, res) => exercises.GetMyTrainings(req, res)),
     router.get('/training/:id', async (req, res) => exercises.GetTrainingById(req, res)),

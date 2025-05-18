@@ -489,6 +489,34 @@ const PostExercise = async (req, res) => {
         }
 
     },
+    GetAllExercises = async (req, res) => {
+
+        const adminCheck = await jwtUncrypt(req.headers.authorization)
+
+        if (!adminCheck?.user) {
+            return res.status(403).json({
+                message: "Usuário não autorizado."
+            });
+        }
+        const data = await p.exercise.findMany({
+            where: {
+                situation: 1,
+                deletedAt: null
+            }
+        })
+
+
+        if (data) {
+            await p.$disconnect();
+            return res.status(201).json(data);
+        } else {
+            await p.$disconnect();
+            return res.status(401).json({
+                message: "Usuário não cadastrado."
+            });
+        }
+
+    },
     GetExercisesByGroup = async (req, res) => {
 
         const adminCheck = await jwtUncrypt(req.headers.authorization)
@@ -703,4 +731,4 @@ const PostExercise = async (req, res) => {
     }
 
 
-module.exports = { PostExercise, PostTraining, PostStep, PostSerie, GetAllGroups, GetExercisesByGroup, PostExercisesOnGroup, PutTraining, TrainingPhotoUpdate, GetMyTrainings, GetTrainingById, DeleteTraining, PutStep };
+module.exports = { PostExercise, PostTraining, PostStep, PostSerie, GetAllGroups, GetExercisesByGroup, PostExercisesOnGroup, PutTraining, TrainingPhotoUpdate, GetMyTrainings, GetTrainingById, DeleteTraining, PutStep, GetAllExercises };
