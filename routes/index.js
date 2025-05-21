@@ -40,6 +40,7 @@ router.get('/groups', async (req, res) => exercises.GetAllGroups(req, res)),
     router.put('/photo-training', upload.single('file'), async (req, res) => exercises.TrainingPhotoUpdate(req, res)),
     router.put('/training', async (req, res) => exercises.PutTraining(req, res)),
     router.put('/step', async (req, res) => exercises.PutStep(req, res)),
+    router.put('/serie', async (req, res) => exercises.PutSerie(req, res)),
     router.put('/delete-step', async (req, res) => exercises.PutStep(req, res)),
     router.put('/delete-training', async (req, res) => exercises.DeleteTraining(req, res));
 

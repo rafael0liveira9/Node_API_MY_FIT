@@ -107,6 +107,7 @@ model series {
   deletedAt       DateTime? @db.Timestamp(0)
   interval        Int?
   addSet          Int?      @db.TinyInt
+  repetitions     Int?
   exercise        exercise? @relation(fields: [exerciseId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "series_exercise_FK")
   step            step      @relation(fields: [stepId], references: [id], onUpdate: Restrict, map: "series_step_FK")
 

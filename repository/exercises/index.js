@@ -256,7 +256,9 @@ const PostExercise = async (req, res) => {
                     bisetExerciseId: req.body.bisetExerciseId,
                     interval: req.body.interval,
                     stepId: req.body.stepId,
-                    difficulty: JSON.stringify(req.body.difficulty)
+                    difficulty: JSON.stringify(req.body.difficulty),
+                    amount: req.body.amount,
+                    repetitions: req.body.repetitions,
                 }
             });
             if (!newStep) {
@@ -265,6 +267,63 @@ const PostExercise = async (req, res) => {
 
             return res.status(200).json({
                 message: "Serie cadastrado com sucesso",
+                step: newStep
+            });
+
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    },
+    PutSerie = async (req, res) => {
+        const user = await jwtUncrypt(req.headers.authorization);
+        const userId = user?.user?.id;
+
+
+        if (!userId) {
+            return res.status(401).json({ message: "Usuário não encontrado." });
+        }
+
+        try {
+            const already = await p.series.findFirst({
+                where: {
+                    id: req.body.id,
+                    situation: 1,
+                    deletedAt: null
+                }
+            })
+
+            if (!already) {
+                p.$disconnect();
+                return {
+                    status: 404,
+                    message: "Serie não cadastrada"
+                }
+            }
+
+            const newStep = await p.series.update({
+                where: {
+                    id: req.body.id,
+                    situation: 1,
+                    deletedAt: null
+                },
+                data: {
+                    exerciseId: req.body.exercise,
+                    isometry: req.body.isometry,
+                    addSet: req.body.addSet,
+                    bisetExerciseId: req.body.bisetExercise,
+                    interval: req.body.interval,
+                    difficulty: JSON.stringify(req.body.difficulty),
+                    amount: req.body.amount,
+                    repetitions: req.body.repetitions,
+                }
+            });
+            if (!newStep) {
+                throw new Error("Erro ao editar nova serie");
+            }
+
+            return res.status(200).json({
+                message: "Serie salva com sucesso",
                 step: newStep
             });
 
@@ -745,4 +804,4 @@ const PostExercise = async (req, res) => {
     }
 
 
-module.exports = { PostExercise, PostTraining, PostStep, PostSerie, GetAllGroups, GetExercisesByGroup, PostExercisesOnGroup, PutTraining, TrainingPhotoUpdate, GetMyTrainings, GetTrainingById, DeleteTraining, PutStep, GetAllExercises };
+module.exports = { PostExercise, PostTraining, PostStep, PostSerie, GetAllGroups, GetExercisesByGroup, PostExercisesOnGroup, PutTraining, TrainingPhotoUpdate, GetMyTrainings, GetTrainingById, DeleteTraining, PutStep, GetAllExercises, PutSerie };
