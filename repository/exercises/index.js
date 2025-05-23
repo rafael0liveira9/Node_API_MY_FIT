@@ -588,6 +588,9 @@ const PostExercise = async (req, res) => {
                     clientId: alreadyUser.client.id,
                     situation: 1,
                     deletedAt: null
+                },
+                include: {
+                    training: true
                 }
             });
 
