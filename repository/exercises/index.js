@@ -88,154 +88,6 @@ const PostExercise = async (req, res) => {
     }
 
 },
-    PostStep = async (req, res) => {
-        const user = await jwtUncrypt(req.headers.authorization);
-        const userId = user?.user?.id;
-
-
-        if (!userId) {
-            return res.status(401).json({ message: "Usuário não encontrado." });
-        }
-
-        try {
-            const alreadyHave = await p.step.findFirst({
-                where: {
-                    name: req.body.name,
-                    trainingId: req.body.trainingId,
-                    deletedAt: null,
-                    situation: 1
-                }
-            });
-
-            if (alreadyHave) {
-                return res.status(401).json({
-                    message: "Step com o mesmo nome já existe!"
-                });
-            }
-
-            const newStep = await p.step.create({
-                data: {
-                    name: req.body.name,
-                    description: req.body.description || '',
-                    priority: req.body.priority,
-                    trainingId: req.body.trainingId
-                }
-            });
-
-            if (!newStep) {
-                throw new Error("Erro ao criar novo step");
-            }
-
-            return res.status(200).json({
-                message: "Step cadastrado com sucesso",
-                step: newStep
-            });
-
-        } catch (error) {
-            console.error(error);
-            throw error;
-        }
-    },
-    PutStep = async (req, res) => {
-        const user = await jwtUncrypt(req.headers.authorization);
-        const userId = user?.user?.id;
-
-
-        if (!userId) {
-            return res.status(401).json({ message: "Usuário não encontrado." });
-        }
-
-
-        try {
-            const alreadyHave = await p.step.findFirst({
-                where: {
-                    id: req.body.id,
-                    deletedAt: null,
-                    situation: 1
-                }
-            });
-
-            if (!alreadyHave) {
-                const x = async () => await PostStep(req, res);
-                return x
-            }
-
-            const newTraining = await p.step.update({
-                where: {
-                    id: alreadyHave.id
-                },
-                data: {
-                    id: req.body.id,
-                    name: req.body.name || alreadyHave.name,
-                    description: req.body.description || alreadyHave.description,
-                    priority: req.body.priority || alreadyHave.priority,
-                    trainingId: req.body.trainingId || alreadyHave.trainingId
-                }
-            });
-            return res.status(200).json({
-                status: 200,
-                message: "Step salvo com sucesso",
-                exercise: newTraining
-            });
-
-
-        } catch (error) {
-            console.error(error);
-            return res.status(500).json({
-                message: "Erro ao criar novo treino"
-            });
-        } finally {
-            await p.$disconnect();
-        }
-    },
-    DeleteStep = async (req, res) => {
-        const user = await jwtUncrypt(req.headers.authorization);
-        const userId = user?.user?.id;
-
-
-        if (!userId) {
-            return res.status(401).json({ message: "Usuário não encontrado." });
-        }
-
-
-        try {
-            const alreadyHave = await p.step.findFirst({
-                where: {
-                    id: req.body.id,
-                    deletedAt: null,
-                    situation: 1
-                }
-            });
-
-            if (!alreadyHave) {
-                return res.status(401).json({ message: "step não encontrado." });
-            }
-
-            const newTraining = await p.step.update({
-                where: {
-                    id: alreadyHave.id
-                },
-                data: {
-                    situation: 1,
-                    deletedAt: new Date()
-                }
-            });
-            return res.status(200).json({
-                status: 200,
-                message: "Step deletado com sucesso",
-                exercise: newTraining
-            });
-
-
-        } catch (error) {
-            console.error(error);
-            return res.status(500).json({
-                message: "Erro ao criar novo treino"
-            });
-        } finally {
-            await p.$disconnect();
-        }
-    },
     PostSerie = async (req, res) => {
         const user = await jwtUncrypt(req.headers.authorization);
         const userId = user?.user?.id;
@@ -248,26 +100,26 @@ const PostExercise = async (req, res) => {
         try {
 
 
-            const newStep = await p.series.create({
+            const newSerie = await p.series.create({
                 data: {
                     exerciseId: req.body.exercise,
                     isometry: req.body.isometry,
                     addSet: req.body.addSet,
                     bisetExerciseId: req.body.bisetExerciseId,
                     interval: req.body.interval,
-                    stepId: req.body.stepId,
+                    trainingId: req.body.trainingId,
                     difficulty: JSON.stringify(req.body.difficulty),
                     amount: req.body.amount,
                     repetitions: req.body.repetitions,
                 }
             });
-            if (!newStep) {
+            if (!newSerie) {
                 throw new Error("Erro ao criar nova serie");
             }
 
             return res.status(200).json({
                 message: "Serie cadastrado com sucesso",
-                step: newStep
+                serie: newSerie
             });
 
         } catch (error) {
@@ -301,7 +153,7 @@ const PostExercise = async (req, res) => {
                 }
             }
 
-            const newStep = await p.series.update({
+            const newSerie = await p.series.update({
                 where: {
                     id: req.body.id,
                     situation: 1,
@@ -318,13 +170,13 @@ const PostExercise = async (req, res) => {
                     repetitions: req.body.repetitions,
                 }
             });
-            if (!newStep) {
+            if (!newSerie) {
                 throw new Error("Erro ao editar nova serie");
             }
 
             return res.status(200).json({
                 message: "Serie salva com sucesso",
-                step: newStep
+                serie: newSerie
             });
 
         } catch (error) {
@@ -776,13 +628,9 @@ const PostExercise = async (req, res) => {
             include: {
                 training: {
                     include: {
-                        step: {
+                        series: {
                             include: {
-                                series: {
-                                    include: {
-                                        exercise: true
-                                    }
-                                }
+                                exercise: true
                             }
                         }
                     }
@@ -804,4 +652,4 @@ const PostExercise = async (req, res) => {
     }
 
 
-module.exports = { PostExercise, PostTraining, PostStep, PostSerie, GetAllGroups, GetExercisesByGroup, PostExercisesOnGroup, PutTraining, TrainingPhotoUpdate, GetMyTrainings, GetTrainingById, DeleteTraining, PutStep, GetAllExercises, PutSerie };
+module.exports = { PostExercise, PostTraining, PostSerie, GetAllGroups, GetExercisesByGroup, PostExercisesOnGroup, PutTraining, TrainingPhotoUpdate, GetMyTrainings, GetTrainingById, DeleteTraining, GetAllExercises, PutSerie };

@@ -95,40 +95,25 @@ model exercise {
 
 model series {
   id              Int       @id @default(autoincrement())
-  stepId          Int
+  trainingId      Int?
   exerciseId      Int?
-  amount          Int       @default(1) @db.TinyInt
-  isometry        Int       @default(0) @db.TinyInt
+  amount          Int?      @default(3) @db.TinyInt
+  isometry        Int?      @default(0) @db.TinyInt
   bisetExerciseId Int?
-  difficulty      String?   @default("[\"0\"]") @db.VarChar(255)
+  difficulty      String?   @default("[\"0\", \"0\", \"0\"]") @db.VarChar(255)
   situation       Int       @default(1) @db.TinyInt
   createdAt       DateTime? @default(now()) @db.Timestamp(0)
   updatedAt       DateTime? @db.Timestamp(0)
   deletedAt       DateTime? @db.Timestamp(0)
   interval        Int?
-  addSet          Int?      @db.TinyInt
-  repetitions     Int?
+  addSet          Int?      @default(0) @db.TinyInt
+  repetitions     Int?      @default(12)
+  observations    String?   @db.VarChar(255)
   exercise        exercise? @relation(fields: [exerciseId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "series_exercise_FK")
-  step            step      @relation(fields: [stepId], references: [id], onUpdate: Restrict, map: "series_step_FK")
+  training        training? @relation(fields: [trainingId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "series_training_FK")
 
   @@index([exerciseId], map: "series_exercise_FK")
-  @@index([stepId], map: "series_step_FK")
-}
-
-model step {
-  id          Int       @id @default(autoincrement())
-  name        String    @db.VarChar(100)
-  description String?   @db.VarChar(100)
-  priority    Int       @default(1) @db.TinyInt
-  situation   Int       @default(1) @db.TinyInt
-  trainingId  Int
-  createdAt   DateTime? @default(now()) @db.Timestamp(0)
-  updatedAt   DateTime? @db.Timestamp(0)
-  deletedAt   DateTime? @db.Timestamp(0)
-  series      series[]
-  training    training  @relation(fields: [trainingId], references: [id], onUpdate: Restrict, map: "step_training_FK")
-
-  @@index([trainingId], map: "step_training_FK")
+  @@index([trainingId], map: "series_training_FK")
 }
 
 model training {
@@ -144,7 +129,7 @@ model training {
   situation           Int                   @default(1) @db.TinyInt
   packageId           Int?
   photo               String?               @db.VarChar(255)
-  step                step[]
+  series              series[]
   user                user                  @relation(fields: [authorId], references: [id], onUpdate: Restrict, map: "training_user_FK")
   trainingAssignments trainingAssignments[]
 
