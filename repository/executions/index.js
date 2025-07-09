@@ -50,13 +50,13 @@ const PostTrainingExecution = async (req, res) => {
 
         if (!newExecution) {
             return res.status(500).json({
-                message: "Erro ao iniciar execução"
+                message: "Erro ao iniciar execução",
             });
         }
 
         await p.$disconnect();
         return res.status(200).json({
-            message: "Execução iniciada"
+            execution: newExecution
         });
     } catch (error) {
         await p.$disconnect();
