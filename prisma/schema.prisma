@@ -25,8 +25,12 @@ model client {
   situation                                                     Int                   @default(1) @db.TinyInt
   gender                                                        Int?                  @db.TinyInt
   birthDate                                                     DateTime?             @db.Timestamp(0)
+  exercise                                                      exercise[]
+  serieExecution                                                serieExecution[]
+  training                                                      training[]
   trainingAssignments_trainingAssignments_clientIdToclient      trainingAssignments[] @relation("trainingAssignments_clientIdToclient")
   trainingAssignments_trainingAssignments_responsibleIdToclient trainingAssignments[] @relation("trainingAssignments_responsibleIdToclient")
+  trainingExecution                                             trainingExecution[]
   user                                                          user[]
 }
 
@@ -39,26 +43,24 @@ model type {
 }
 
 model user {
-  id            Int        @id @default(autoincrement())
-  email         String     @db.VarChar(100)
-  password      String     @db.VarChar(255)
-  tip           String?    @db.VarChar(255)
-  reply         String?    @db.VarChar(255)
+  id            Int       @id @default(autoincrement())
+  email         String    @db.VarChar(100)
+  password      String    @db.VarChar(255)
+  tip           String?   @db.VarChar(255)
+  reply         String?   @db.VarChar(255)
   questionId    Int?
   clientId      Int
   typeId        Int
   lastPaymentId Int?
-  createdAt     DateTime   @default(now()) @db.Timestamp(0)
-  updatedAt     DateTime?  @db.Timestamp(0)
-  deletedAt     DateTime?  @db.Timestamp(0)
-  situation     Int        @default(1) @db.TinyInt
-  socialCode    String?    @db.VarChar(50)
-  inputCode     String?    @db.Char(10)
-  exercise      exercise[]
-  training      training[]
-  client        client     @relation(fields: [clientId], references: [id], onUpdate: Restrict, map: "user_client_FK")
-  questions     question?  @relation(fields: [questionId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "user_questions_FK")
-  type          type       @relation(fields: [typeId], references: [id], onUpdate: Restrict, map: "user_type_FK")
+  createdAt     DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt     DateTime? @db.Timestamp(0)
+  deletedAt     DateTime? @db.Timestamp(0)
+  situation     Int       @default(1) @db.TinyInt
+  socialCode    String?   @db.VarChar(50)
+  inputCode     String?   @db.Char(10)
+  client        client    @relation(fields: [clientId], references: [id], onUpdate: Restrict, map: "user_client_FK")
+  questions     question? @relation(fields: [questionId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "user_questions_FK")
+  type          type      @relation(fields: [typeId], references: [id], onUpdate: Restrict, map: "user_type_FK")
 
   @@index([questionId], map: "user_questions_FK")
   @@index([typeId], map: "user_type_FK")
@@ -73,24 +75,25 @@ model question {
 }
 
 model exercise {
-  id            Int          @id @default(autoincrement())
-  name          String       @db.VarChar(100)
-  description   String?      @db.VarChar(100)
-  image         String?      @db.VarChar(255)
-  animation     String?      @db.VarChar(255)
-  video         String?      @db.VarChar(255)
-  createdAt     DateTime     @default(now()) @db.Timestamp(0)
-  updatedAt     DateTime?    @db.Timestamp(0)
-  deletedAt     DateTime?    @db.Timestamp(0)
-  situation     Int          @default(1) @db.TinyInt
-  authorId      Int?
-  groupMuscleId Int?
-  muscleGroup   muscleGroup? @relation(fields: [groupMuscleId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "exercise_muscleGroup_FK")
-  user          user?        @relation(fields: [authorId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "exercise_user_FK")
-  series        series[]
+  id             Int              @id @default(autoincrement())
+  name           String           @db.VarChar(100)
+  description    String?          @db.VarChar(100)
+  image          String?          @db.VarChar(255)
+  animation      String?          @db.VarChar(255)
+  video          String?          @db.VarChar(255)
+  createdAt      DateTime         @default(now()) @db.Timestamp(0)
+  updatedAt      DateTime?        @db.Timestamp(0)
+  deletedAt      DateTime?        @db.Timestamp(0)
+  situation      Int              @default(1) @db.TinyInt
+  authorId       Int?
+  groupMuscleId  Int?
+  user           client?          @relation(fields: [authorId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "exercise_user_FK")
+  muscleGroup    muscleGroup?     @relation(fields: [groupMuscleId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "exercise_muscleGroup_FK")
+  serieExecution serieExecution[]
+  series         series[]
 
-  @@index([authorId], map: "exercise_user_FK")
   @@index([groupMuscleId], map: "exercise_muscleGroup_FK")
+  @@index([authorId], map: "exercise_client_FK")
 }
 
 model series {
@@ -130,10 +133,10 @@ model training {
   packageId           Int?
   photo               String?               @db.VarChar(255)
   series              series[]
-  user                user                  @relation(fields: [authorId], references: [id], onUpdate: Restrict, map: "training_user_FK")
+  user                client                @relation(fields: [authorId], references: [id], onUpdate: Restrict, map: "training_user_FK")
   trainingAssignments trainingAssignments[]
 
-  @@index([authorId], map: "training_user_FK")
+  @@index([authorId], map: "training_client_FK")
 }
 
 model muscleGroup {
@@ -148,21 +151,53 @@ model muscleGroup {
 }
 
 model trainingAssignments {
-  id                                               Int       @id @default(autoincrement())
+  id                                               Int                 @id @default(autoincrement())
   clientId                                         Int
   trainingId                                       Int
   responsibleId                                    Int?
-  situation                                        Int       @default(1) @db.TinyInt
-  expirationDate                                   DateTime? @db.DateTime(0)
-  createdAt                                        DateTime? @default(now()) @db.DateTime(0)
-  updatedAt                                        DateTime? @db.DateTime(0)
-  deletedAt                                        DateTime? @db.DateTime(0)
+  situation                                        Int                 @default(1) @db.TinyInt
+  expirationDate                                   DateTime?           @db.DateTime(0)
+  createdAt                                        DateTime?           @default(now()) @db.DateTime(0)
+  updatedAt                                        DateTime?           @db.DateTime(0)
+  deletedAt                                        DateTime?           @db.DateTime(0)
   CompanyResposibleId                              Int?
-  client_trainingAssignments_clientIdToclient      client    @relation("trainingAssignments_clientIdToclient", fields: [clientId], references: [id], onUpdate: Restrict, map: "trainingAssignments_client_FK")
-  client_trainingAssignments_responsibleIdToclient client?   @relation("trainingAssignments_responsibleIdToclient", fields: [responsibleId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "trainingAssignments_client_FK_1")
-  training                                         training  @relation(fields: [trainingId], references: [id], onUpdate: Restrict, map: "trainingAssignments_training_FK")
+  client_trainingAssignments_clientIdToclient      client              @relation("trainingAssignments_clientIdToclient", fields: [clientId], references: [id], onUpdate: Restrict, map: "trainingAssignments_client_FK")
+  client_trainingAssignments_responsibleIdToclient client?             @relation("trainingAssignments_responsibleIdToclient", fields: [responsibleId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "trainingAssignments_client_FK_1")
+  training                                         training            @relation(fields: [trainingId], references: [id], onUpdate: Restrict, map: "trainingAssignments_training_FK")
+  trainingExecution                                trainingExecution[]
 
   @@index([clientId], map: "trainingAssignments_client_FK")
   @@index([responsibleId], map: "trainingAssignments_client_FK_1")
   @@index([trainingId], map: "trainingAssignments_training_FK")
+}
+
+model serieExecution {
+  id                Int                @id @default(autoincrement())
+  exerciseId        Int?
+  clientId          Int?
+  executionId       Int?
+  dificulty         String?            @db.VarChar(255)
+  client            client?            @relation(fields: [clientId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "exerciseExecution_client_FK")
+  exercise          exercise?          @relation(fields: [exerciseId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "exerciseExecution_exercise_FK")
+  trainingExecution trainingExecution? @relation(fields: [executionId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "exerciseExecution_trainingExecution_FK")
+
+  @@index([clientId], map: "exerciseExecution_client_FK")
+  @@index([exerciseId], map: "exerciseExecution_exercise_FK")
+  @@index([executionId], map: "exerciseExecution_trainingExecution_FK")
+}
+
+model trainingExecution {
+  id             Int                  @id @default(autoincrement())
+  trainingId     Int?
+  clientId       Int?
+  evaluation     Int?
+  observation    String?              @db.VarChar(100)
+  startAt        DateTime?            @db.DateTime(0)
+  endAt          DateTime?            @db.DateTime(0)
+  serieExecution serieExecution[]
+  client         client?              @relation(fields: [clientId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "trainingExecution_client_FK")
+  training       trainingAssignments? @relation(fields: [trainingId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "trainingExecution_training_FK")
+
+  @@index([clientId], map: "trainingExecution_client_FK")
+  @@index([trainingId], map: "trainingExecution_trainingAssignments_FK")
 }
