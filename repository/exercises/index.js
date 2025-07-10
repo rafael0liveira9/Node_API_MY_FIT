@@ -382,6 +382,7 @@ const PostExercise = async (req, res) => {
             select: {
                 id: true,
                 name: true,
+                color: true,
                 description: true,
                 situation: true,
                 createdAt: true,
