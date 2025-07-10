@@ -148,6 +148,7 @@ model muscleGroup {
   createdAt   DateTime   @default(now()) @db.Timestamp(0)
   updatedAt   DateTime?  @db.Timestamp(0)
   deletedAt   DateTime?  @db.Timestamp(0)
+  color       String?    @db.VarChar(100)
   exercise    exercise[]
 }
 
