@@ -613,7 +613,7 @@ const PostExercise = async (req, res) => {
             });
 
 
-            const data = assignments.map(a => {
+            const assignmentsWithAvg = assignments.map(a => {
                 const evaluationObj = evaluations.find(e => e.trainingId === a.training.id);
                 const avg = evaluationObj?._avg?.evaluation ?? null;
 
@@ -626,10 +626,27 @@ const PostExercise = async (req, res) => {
                 };
             });
 
+            const sortedAssignments = assignmentsWithAvg.sort((a, b) => {
+                const aExec = a.trainingExecution[0];
+                const bExec = b.trainingExecution[0];
 
-            if (data) {
+                const aIsRunning = aExec && aExec.startAt && !aExec.endAt;
+                const bIsRunning = bExec && bExec.startAt && !bExec.endAt;
+
+                if (aIsRunning && !bIsRunning) return -1;
+                if (!aIsRunning && bIsRunning) return 1;
+
+                const aStart = aExec?.startAt ? new Date(aExec.startAt).getTime() : 0;
+                const bStart = bExec?.startAt ? new Date(bExec.startAt).getTime() : 0;
+
+                return aStart - bStart;
+            });
+
+
+
+            if (sortedAssignments) {
                 await p.$disconnect();
-                return res.status(201).json(data);
+                return res.status(200).json(sortedAssignments);
             } else {
                 await p.$disconnect();
                 return res.status(401).json({
@@ -674,15 +691,12 @@ const PostExercise = async (req, res) => {
             }
         })
 
-
         if (data) {
             await p.$disconnect();
             return res.status(201).json(data);
         } else {
             await p.$disconnect();
-            return res.status(401).json({
-                message: "Usuário não cadastrado."
-            });
+            return res.status(401).json(null);
         }
 
     }

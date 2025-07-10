@@ -44,7 +44,8 @@ router.get('/groups', async (req, res) => exercises.GetAllGroups(req, res)),
 
 
 // *********************************************************************************************** EXECUTION ROUTES
-router.post('/execution-training', async (req, res) => executions.PostTrainingExecution(req, res)),
+router.get('/execution/:id', async (req, res) => executions.GetExecutionById(req, res)),
+    router.post('/execution-training', async (req, res) => executions.PostTrainingExecution(req, res)),
     router.post('/execution-exercise', async (req, res) => executions.PostExerciseExecution(req, res)),
     router.put('/complete-execution-training', async (req, res) => executions.CompleteTrainingExecution(req, res));
 
