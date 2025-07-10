@@ -135,6 +135,7 @@ model training {
   series              series[]
   user                client                @relation(fields: [authorId], references: [id], onUpdate: Restrict, map: "training_user_FK")
   trainingAssignments trainingAssignments[]
+  trainingEvaluations trainingEvaluations[]
 
   @@index([authorId], map: "training_client_FK")
 }
@@ -200,4 +201,16 @@ model trainingExecution {
 
   @@index([clientId], map: "trainingExecution_client_FK")
   @@index([trainingId], map: "trainingExecution_trainingAssignments_FK")
+}
+
+model trainingEvaluations {
+  id          Int       @id
+  trainingId  Int?
+  evaluation  Int?
+  observation String?   @db.VarChar(255)
+  createdAt   DateTime? @db.DateTime(0)
+  situation   Int?      @default(1) @db.TinyInt
+  training    training? @relation(fields: [trainingId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "trainingEvaluations_training_FK")
+
+  @@index([trainingId], map: "trainingEvaluations_training_FK")
 }

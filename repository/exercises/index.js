@@ -583,7 +583,7 @@ const PostExercise = async (req, res) => {
                 }
             });
 
-            const data = await p.trainingAssignments.findMany({
+            const assignments = await p.trainingAssignments.findMany({
                 where: {
                     clientId: alreadyUser.client.id,
                     situation: 1,
@@ -599,6 +599,33 @@ const PostExercise = async (req, res) => {
                     },
                 }
             });
+
+            const trainingIds = assignments.map(a => a.training.id);
+
+            const evaluations = await p.trainingEvaluations.groupBy({
+                by: ['trainingId'],
+                where: {
+                    trainingId: { in: trainingIds }
+                },
+                _avg: {
+                    evaluation: true
+                }
+            });
+
+
+            const data = assignments.map(a => {
+                const evaluationObj = evaluations.find(e => e.trainingId === a.training.id);
+                const avg = evaluationObj?._avg?.evaluation ?? null;
+
+                return {
+                    ...a,
+                    training: {
+                        ...a.training,
+                        evaluation: avg
+                    }
+                };
+            });
+
 
             if (data) {
                 await p.$disconnect();
