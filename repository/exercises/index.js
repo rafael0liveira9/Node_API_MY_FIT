@@ -110,7 +110,7 @@ const PostExercise = async (req, res) => {
                     trainingId: req.body.trainingId,
                     difficulty: JSON.stringify(req.body.difficulty),
                     amount: req.body.amount,
-                    repetitions: req.body.repetitions,
+                    repetitions: JSON.stringify(req.body.repetitions),
                 }
             });
             if (!newSerie) {
@@ -167,7 +167,7 @@ const PostExercise = async (req, res) => {
                     interval: req.body.interval,
                     difficulty: JSON.stringify(req.body.difficulty),
                     amount: req.body.amount,
-                    repetitions: req.body.repetitions,
+                    repetitions: JSON.stringify(req.body.repetitions),
                 }
             });
             if (!newSerie) {

@@ -75,45 +75,46 @@ model question {
 }
 
 model exercise {
-  id             Int              @id @default(autoincrement())
-  name           String           @db.VarChar(100)
-  description    String?          @db.VarChar(100)
-  image          String?          @db.VarChar(255)
-  animation      String?          @db.VarChar(255)
-  video          String?          @db.VarChar(255)
-  createdAt      DateTime         @default(now()) @db.Timestamp(0)
-  updatedAt      DateTime?        @db.Timestamp(0)
-  deletedAt      DateTime?        @db.Timestamp(0)
-  situation      Int              @default(1) @db.TinyInt
-  authorId       Int?
-  groupMuscleId  Int?
-  user           client?          @relation(fields: [authorId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "exercise_user_FK")
-  muscleGroup    muscleGroup?     @relation(fields: [groupMuscleId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "exercise_muscleGroup_FK")
-  serieExecution serieExecution[]
-  series         series[]
+  id            Int          @id @default(autoincrement())
+  name          String       @db.VarChar(100)
+  description   String?      @db.VarChar(100)
+  image         String?      @db.VarChar(255)
+  animation     String?      @db.VarChar(255)
+  video         String?      @db.VarChar(255)
+  createdAt     DateTime     @default(now()) @db.Timestamp(0)
+  updatedAt     DateTime?    @db.Timestamp(0)
+  deletedAt     DateTime?    @db.Timestamp(0)
+  situation     Int          @default(1) @db.TinyInt
+  authorId      Int?
+  groupMuscleId Int?
+  user          client?      @relation(fields: [authorId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "exercise_user_FK")
+  muscleGroup   muscleGroup? @relation(fields: [groupMuscleId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "exercise_muscleGroup_FK")
+  series        series[]
 
   @@index([groupMuscleId], map: "exercise_muscleGroup_FK")
   @@index([authorId], map: "exercise_client_FK")
 }
 
 model series {
-  id              Int       @id @default(autoincrement())
+  id              Int              @id @default(autoincrement())
   trainingId      Int?
   exerciseId      Int?
-  amount          Int?      @default(3) @db.TinyInt
-  isometry        Int?      @default(0) @db.TinyInt
+  amount          Int?             @default(3) @db.TinyInt
+  isometry        Int?             @default(0) @db.TinyInt
   bisetExerciseId Int?
-  difficulty      String?   @default("[\"0\", \"0\", \"0\"]") @db.VarChar(255)
-  situation       Int       @default(1) @db.TinyInt
-  createdAt       DateTime? @default(now()) @db.Timestamp(0)
-  updatedAt       DateTime? @db.Timestamp(0)
-  deletedAt       DateTime? @db.Timestamp(0)
+  difficulty      String?          @default("[\"0\", \"0\", \"0\"]") @db.VarChar(255)
+  situation       Int              @default(1) @db.TinyInt
+  createdAt       DateTime?        @default(now()) @db.Timestamp(0)
+  updatedAt       DateTime?        @db.Timestamp(0)
+  deletedAt       DateTime?        @db.Timestamp(0)
   interval        Int?
-  addSet          Int?      @default(0) @db.TinyInt
-  repetitions     Int?      @default(12)
-  observations    String?   @db.VarChar(255)
-  exercise        exercise? @relation(fields: [exerciseId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "series_exercise_FK")
-  training        training? @relation(fields: [trainingId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "series_training_FK")
+  addSet          Int?             @default(0) @db.TinyInt
+  repetitions     String?          @default("[\"15\", \"15\", \"15\"]") @db.VarChar(255)
+  observations    String?          @db.VarChar(255)
+  personalRecord  String?          @db.VarChar(100)
+  serieExecution  serieExecution[]
+  exercise        exercise?        @relation(fields: [exerciseId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "series_exercise_FK")
+  training        training?        @relation(fields: [trainingId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "series_training_FK")
 
   @@index([exerciseId], map: "series_exercise_FK")
   @@index([trainingId], map: "series_training_FK")
@@ -180,12 +181,12 @@ model serieExecution {
   executionId       Int?
   dificulty         String?            @db.VarChar(255)
   client            client?            @relation(fields: [clientId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "exerciseExecution_client_FK")
-  exercise          exercise?          @relation(fields: [exerciseId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "exerciseExecution_exercise_FK")
   trainingExecution trainingExecution? @relation(fields: [executionId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "exerciseExecution_trainingExecution_FK")
+  exercise          series?            @relation(fields: [exerciseId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "exerciseExecution_exercise_FK")
 
   @@index([clientId], map: "exerciseExecution_client_FK")
-  @@index([exerciseId], map: "exerciseExecution_exercise_FK")
   @@index([executionId], map: "exerciseExecution_trainingExecution_FK")
+  @@index([exerciseId], map: "serieExecution_series_FK")
 }
 
 model trainingExecution {

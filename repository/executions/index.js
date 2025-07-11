@@ -150,6 +150,20 @@ const PostTrainingExecution = async (req, res) => {
             }
         })
 
+
+        if (!alreadyHave) {
+            return res.status(401).json({
+                message: "Usuário não encontrado."
+            });
+        }
+
+        const alreadySerie = await p.series.findFirst({
+            where: {
+                id: req.body.exerciseId,
+                deletedAt: null
+            }
+        })
+
         try {
             const newExecution = await p.serieExecution.create({
                 data: {
@@ -165,6 +179,15 @@ const PostTrainingExecution = async (req, res) => {
                     message: "Erro ao iniciar execução"
                 });
             }
+
+            const difficultyUpdate = await p.series.update({
+                where: {
+                    id: req.body.exerciseId
+                },
+                data: {
+                    dificulty: JSON.stringify(req.body.dificulty)
+                }
+            })
 
             await p.$disconnect();
             return res.status(200).json({
