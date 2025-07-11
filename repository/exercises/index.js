@@ -207,6 +207,8 @@ const PostExercise = async (req, res) => {
                 }
             });
 
+            console.log('alreadyUser', alreadyUser)
+
             const alreadyHave = await p.training.findFirst({
                 where: {
                     name: name,
