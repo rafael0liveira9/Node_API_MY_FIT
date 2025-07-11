@@ -593,7 +593,11 @@ const PostExercise = async (req, res) => {
                     deletedAt: null
                 },
                 include: {
-                    training: true,
+                    training: {
+                        include: {
+                            user: true
+                        }
+                    },
                     trainingExecution: {
                         take: 1,
                         orderBy: {
