@@ -179,7 +179,7 @@ model serieExecution {
   exerciseId        Int?
   clientId          Int?
   executionId       Int?
-  dificulty         String?            @db.VarChar(255)
+  difficulty        String?            @db.VarChar(255)
   client            client?            @relation(fields: [clientId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "exerciseExecution_client_FK")
   trainingExecution trainingExecution? @relation(fields: [executionId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "exerciseExecution_trainingExecution_FK")
   exercise          series?            @relation(fields: [exerciseId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "exerciseExecution_exercise_FK")

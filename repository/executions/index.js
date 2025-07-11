@@ -170,7 +170,7 @@ const PostTrainingExecution = async (req, res) => {
                     exerciseId: req.body.exerciseId,
                     clientId: alreadyHave.client.id,
                     executionId: req.body.executionId,
-                    dificulty: JSON.stringify(req.body.dificulty)
+                    difficulty: JSON.stringify(req.body.difficulty)
                 }
             })
 
@@ -185,7 +185,7 @@ const PostTrainingExecution = async (req, res) => {
                     id: req.body.exerciseId
                 },
                 data: {
-                    dificulty: JSON.stringify(req.body.dificulty)
+                    difficulty: JSON.stringify(req.body.difficulty)
                 }
             })
 
