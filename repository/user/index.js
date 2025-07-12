@@ -260,7 +260,7 @@ const GetUserById = async (req, res) => {
 
         const userEdited = await p.user.update({
             where: {
-                id: alreadyUser?.client?.id
+                id: alreadyUser?.id
             },
             data: {
                 email: userData.email ? userData.email : alreadyUser.email,
