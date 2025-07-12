@@ -246,8 +246,6 @@ const PostTrainingExecution = async (req, res) => {
                 include: { training: true }
             });
 
-            console.log('1', trainingExecution.training?.id)
-
             if (!trainingExecution) {
                 return res.status(404).json({ message: "Execução de treinamento não encontrada." });
             }
