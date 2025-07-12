@@ -217,72 +217,77 @@ const PostTrainingExecution = async (req, res) => {
 
     },
     GetExecutionById = async (req, res) => {
-
-        const adminCheck = await jwtUncrypt(req.headers.authorization)
         const { id } = req.params;
 
-        if (!adminCheck?.user) {
-            return res.status(403).json({
-                message: "Usuário não autorizado."
-            });
-        }
-        const alreadyUser = await p.user.findFirst({
-            where: {
-                id: adminCheck?.user?.id,
-                situation: 1,
-                deletedAt: null
-            },
-            include: {
-                client: true
-            }
-        });
-        if (!alreadyUser) {
-            return res.status(403).json({
-                message: "Usuário não autorizado."
-            });
-        }
-        const x = await p.trainingExecution.findFirst({
-            where: {
-                id: parseInt(id),
-            },
-            include: {
-                training: true
+        try {
+            const adminCheck = await jwtUncrypt(req.headers.authorization);
 
+            if (!adminCheck?.user) {
+                return res.status(403).json({ message: "Usuário não autorizado." });
             }
-        })
 
-        const data = await p.trainingAssignments.findFirst({
-            where: {
-                id: x.training?.id,
-                clientId: alreadyUser?.client?.id,
-                situation: 1,
-                deletedAt: null
-            },
-            include: {
-                training: {
-                    include: {
-                        series: {
-                            include: {
-                                exercise: true,
-                                serieExecution: {
-                                    take: 1,
+            const alreadyUser = await p.user.findFirst({
+                where: {
+                    id: adminCheck.user.id,
+                    situation: 1,
+                    deletedAt: null
+                },
+                include: {
+                    client: true
+                }
+            });
+
+            if (!alreadyUser) {
+                return res.status(403).json({ message: "Usuário não autorizado." });
+            }
+
+            const trainingExecution = await p.trainingExecution.findFirst({
+                where: { id: parseInt(id) },
+                include: { training: true }
+            });
+
+            console.log('1', trainingExecution.training?.id)
+
+            if (!trainingExecution) {
+                return res.status(404).json({ message: "Execução de treinamento não encontrada." });
+            }
+
+            const assignment = await p.trainingAssignments.findFirst({
+                where: {
+                    trainingId: trainingExecution.training?.id,
+                    clientId: alreadyUser.client?.id,
+                    situation: 1,
+                    deletedAt: null
+                },
+                include: {
+                    training: {
+                        include: {
+                            series: {
+                                include: {
+                                    exercise: true,
+                                    serieExecution: {
+                                        take: 1
+                                    }
                                 }
                             }
                         }
                     }
                 }
+            });
+
+            if (!assignment) {
+                return res.status(401).json({ message: "Treinamento não autorizado ou não encontrado." });
             }
-        })
 
-        if (data) {
+            return res.status(200).json(assignment);
+        } catch (error) {
+            console.error("Erro ao buscar execução de treinamento:", error);
+            return res.status(500).json({ message: "Erro interno no servidor." });
+        } finally {
             await p.$disconnect();
-            return res.status(201).json(data);
-        } else {
-            await p.$disconnect();
-            return res.status(401).json(null);
         }
+    };
 
-    }
 
 
 module.exports = { PostTrainingExecution, CompleteTrainingExecution, PostExerciseExecution, GetExecutionById };
