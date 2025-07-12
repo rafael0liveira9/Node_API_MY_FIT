@@ -193,7 +193,7 @@ const PostExercise = async (req, res) => {
             return res.status(401).json({ message: "Usuário não encontrado." });
         }
 
-        const { name, description, level, url, photo } = req.body;
+        const { name, description, level, url, photo, assign } = req.body;
 
         try {
             const alreadyUser = await p.user.findFirst({
@@ -234,18 +234,24 @@ const PostExercise = async (req, res) => {
                 }
             });
 
+            let newAssignment = null
+            if (assign === true) {
+                newAssignment = await p.trainingAssignments.create({
+                    data: {
+                        clientId: alreadyUser.client.id,
+                        trainingId: newTraining.id
+                    }
+                });
 
-            const newAssignment = await p.trainingAssignments.create({
-                data: {
-                    clientId: alreadyUser.client.id,
-                    trainingId: newTraining.id
-                }
-            });
+                console.log('qaaaaz', newAssignment)
+            }
 
-            if (newAssignment && newTraining) {
+
+            if (newTraining) {
                 return res.status(200).json({
                     message: "Treino cadastrado com sucesso",
-                    newAssignment: newAssignment
+                    newAssignment: assign && newAssignment !== null ? true : false,
+                    newTraining: newTraining
                 });
             } else {
                 console.log(newAssignment, newTraining)
@@ -595,17 +601,19 @@ const PostExercise = async (req, res) => {
                 include: {
                     training: {
                         include: {
-                            user: true
+                            user: true,
+                            trainingExecution: {
+                                take: 1,
+                                orderBy: {
+                                    startAt: 'desc'
+                                }
+                            },
                         }
                     },
-                    trainingExecution: {
-                        take: 1,
-                        orderBy: {
-                            startAt: 'desc'
-                        }
-                    },
+
                 }
             });
+
 
             const trainingIds = assignments.map(a => a.training.id);
 
@@ -634,8 +642,8 @@ const PostExercise = async (req, res) => {
             });
 
             const sortedAssignments = assignmentsWithAvg.sort((a, b) => {
-                const aExec = a.trainingExecution[0];
-                const bExec = b.trainingExecution[0];
+                const aExec = a.training.trainingExecution[0];
+                const bExec = b.training.trainingExecution[0];
 
                 const aIsRunning = aExec && aExec.startAt && !aExec.endAt;
                 const bIsRunning = bExec && bExec.startAt && !bExec.endAt;
@@ -690,7 +698,8 @@ const PostExercise = async (req, res) => {
                     include: {
                         series: {
                             include: {
-                                exercise: true
+                                exercise: true,
+                                serieExecution: true,
                             }
                         }
                     }

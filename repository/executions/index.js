@@ -165,12 +165,26 @@ const PostTrainingExecution = async (req, res) => {
         })
 
         try {
+            const difficultyStringfied = JSON.stringify(req.body.difficulty)
+            let record;
+            if (Array.isArray(difficultyStringfied) && difficultyStringfied.length > 0) {
+                record = difficultyStringfied.reduce((max, item) => {
+                    const num = +item;
+                    return num > max ? num : max;
+                }, -Infinity);
+            } else {
+                record = null;
+            }
+
+            console.log('record', record)
+            console.log('alreadySerie', alreadySerie?.personalRecord)
+
             const newExecution = await p.serieExecution.create({
                 data: {
                     exerciseId: req.body.exerciseId,
                     clientId: alreadyHave.client.id,
                     executionId: req.body.executionId,
-                    difficulty: JSON.stringify(req.body.difficulty)
+                    difficulty: difficultyStringfied
                 }
             })
 
@@ -249,7 +263,10 @@ const PostTrainingExecution = async (req, res) => {
                     include: {
                         series: {
                             include: {
-                                exercise: true
+                                exercise: true,
+                                serieExecution: {
+                                    take: 1,
+                                }
                             }
                         }
                     }

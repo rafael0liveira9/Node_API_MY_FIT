@@ -137,6 +137,7 @@ model training {
   user                client                @relation(fields: [authorId], references: [id], onUpdate: Restrict, map: "training_user_FK")
   trainingAssignments trainingAssignments[]
   trainingEvaluations trainingEvaluations[]
+  trainingExecution   trainingExecution[]
 
   @@index([authorId], map: "training_client_FK")
 }
@@ -154,20 +155,19 @@ model muscleGroup {
 }
 
 model trainingAssignments {
-  id                                               Int                 @id @default(autoincrement())
+  id                                               Int       @id @default(autoincrement())
   clientId                                         Int
   trainingId                                       Int
   responsibleId                                    Int?
-  situation                                        Int                 @default(1) @db.TinyInt
-  expirationDate                                   DateTime?           @db.DateTime(0)
-  createdAt                                        DateTime?           @default(now()) @db.DateTime(0)
-  updatedAt                                        DateTime?           @db.DateTime(0)
-  deletedAt                                        DateTime?           @db.DateTime(0)
+  situation                                        Int       @default(1) @db.TinyInt
+  expirationDate                                   DateTime? @db.DateTime(0)
+  createdAt                                        DateTime? @default(now()) @db.DateTime(0)
+  updatedAt                                        DateTime? @db.DateTime(0)
+  deletedAt                                        DateTime? @db.DateTime(0)
   CompanyResposibleId                              Int?
-  client_trainingAssignments_clientIdToclient      client              @relation("trainingAssignments_clientIdToclient", fields: [clientId], references: [id], onUpdate: Restrict, map: "trainingAssignments_client_FK")
-  client_trainingAssignments_responsibleIdToclient client?             @relation("trainingAssignments_responsibleIdToclient", fields: [responsibleId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "trainingAssignments_client_FK_1")
-  training                                         training            @relation(fields: [trainingId], references: [id], onUpdate: Restrict, map: "trainingAssignments_training_FK")
-  trainingExecution                                trainingExecution[]
+  client_trainingAssignments_clientIdToclient      client    @relation("trainingAssignments_clientIdToclient", fields: [clientId], references: [id], onUpdate: Restrict, map: "trainingAssignments_client_FK")
+  client_trainingAssignments_responsibleIdToclient client?   @relation("trainingAssignments_responsibleIdToclient", fields: [responsibleId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "trainingAssignments_client_FK_1")
+  training                                         training  @relation(fields: [trainingId], references: [id], onUpdate: Restrict, map: "trainingAssignments_training_FK")
 
   @@index([clientId], map: "trainingAssignments_client_FK")
   @@index([responsibleId], map: "trainingAssignments_client_FK_1")
@@ -190,19 +190,19 @@ model serieExecution {
 }
 
 model trainingExecution {
-  id             Int                  @id @default(autoincrement())
+  id             Int              @id @default(autoincrement())
   trainingId     Int?
   clientId       Int?
   evaluation     Int?
-  observation    String?              @db.VarChar(100)
-  startAt        DateTime?            @db.DateTime(0)
-  endAt          DateTime?            @db.DateTime(0)
+  observation    String?          @db.VarChar(100)
+  startAt        DateTime?        @db.DateTime(0)
+  endAt          DateTime?        @db.DateTime(0)
   serieExecution serieExecution[]
-  client         client?              @relation(fields: [clientId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "trainingExecution_client_FK")
-  training       trainingAssignments? @relation(fields: [trainingId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "trainingExecution_training_FK")
+  client         client?          @relation(fields: [clientId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "trainingExecution_client_FK")
+  training       training?        @relation(fields: [trainingId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "trainingExecution_training_FK")
 
   @@index([clientId], map: "trainingExecution_client_FK")
-  @@index([trainingId], map: "trainingExecution_trainingAssignments_FK")
+  @@index([trainingId], map: "trainingExecution_training_FK")
 }
 
 model trainingEvaluations {
