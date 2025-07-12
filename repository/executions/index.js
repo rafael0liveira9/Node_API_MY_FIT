@@ -97,6 +97,7 @@ const PostTrainingExecution = async (req, res) => {
 
 
         try {
+
             const newExecution = await p.trainingExecution.update({
                 where: {
                     id: req.body.executionId
@@ -105,15 +106,21 @@ const PostTrainingExecution = async (req, res) => {
                     endAt: new Date()
                 }
             })
+
+            console.log('newExecution', newExecution)
+
             let newEvaluation = null;
             if (!!req.body.evaluation && req.body.evaluation < 6 && !!alreadyUser.client?.id) {
-                newEvaluation = await p.trainingEvaluations.create({
+                console.log("1");
+                const newEvaluation = await p.trainingEvaluations.create({
                     data: {
+                        trainingId: newExecution?.trainingId,
                         evaluation: req.body.evaluation,
                         observation: req.body.observation,
-                        clientId: alreadyUser.client?.id
-                    }
-                })
+                        clientId: alreadyUser.client?.id,
+                    },
+                });
+                console.log("2", newEvaluation);
             }
 
             if (!newExecution) {

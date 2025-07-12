@@ -206,7 +206,7 @@ model trainingExecution {
 }
 
 model trainingEvaluations {
-  id          Int       @id
+  id          Int       @id @default(autoincrement())
   trainingId  Int?
   evaluation  Int?
   observation String?   @db.VarChar(255)
