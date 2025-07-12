@@ -262,6 +262,12 @@ const PostTrainingExecution = async (req, res) => {
                 include: {
                     training: {
                         include: {
+                            trainingExecution: {
+                                take: 1,
+                                orderBy: {
+                                    startAt: 'desc'
+                                }
+                            },
                             series: {
                                 include: {
                                     exercise: true,
