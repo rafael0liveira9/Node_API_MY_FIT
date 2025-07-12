@@ -602,6 +602,7 @@ const PostExercise = async (req, res) => {
                     training: {
                         include: {
                             user: true,
+                            trainingEvaluations: true,
                             trainingExecution: {
                                 take: 1,
                                 orderBy: {

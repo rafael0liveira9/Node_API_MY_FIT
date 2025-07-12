@@ -84,13 +84,17 @@ const PostTrainingExecution = async (req, res) => {
             });
         }
 
-        const alreadyHaveExecution = await p.trainingExecution.findFirst({
+        const alreadyUser = await p.user.findFirst({
             where: {
-                id: req.body.executionId
+                id: user?.user?.id,
+                situation: 1,
+                deletedAt: null
+            },
+            include: {
+                client: true
             }
-        })
+        });
 
-        console.log('alreadyHaveExecution', alreadyHaveExecution)
 
         try {
             const newExecution = await p.trainingExecution.update({
@@ -98,11 +102,19 @@ const PostTrainingExecution = async (req, res) => {
                     id: req.body.executionId
                 },
                 data: {
-                    evaluation: req.body.evaluation,
-                    observation: req.body.observation,
                     endAt: new Date()
                 }
             })
+            let newEvaluation = null;
+            if (!!req.body.evaluation && req.body.evaluation < 6 && !!alreadyUser.client?.id) {
+                newEvaluation = await p.trainingEvaluations.create({
+                    data: {
+                        evaluation: req.body.evaluation,
+                        observation: req.body.observation,
+                        clientId: alreadyUser.client?.id
+                    }
+                })
+            }
 
             if (!newExecution) {
                 return res.status(500).json({
@@ -260,6 +272,12 @@ const PostTrainingExecution = async (req, res) => {
                 include: {
                     training: {
                         include: {
+                            trainingEvaluations: {
+                                take: 1,
+                                where: {
+                                    clientId: alreadyUser?.id
+                                }
+                            },
                             trainingExecution: {
                                 take: 1,
                                 orderBy: {
@@ -281,12 +299,37 @@ const PostTrainingExecution = async (req, res) => {
                     }
                 }
             });
+            console.log('1', !!assignment)
+            const evaluations = await p.trainingEvaluations.groupBy({
+                by: ['trainingId'],
+                where: {
+                    trainingId: assignment.training.id
+                },
+                _avg: {
+                    evaluation: true
+                }
+            });
 
-            if (!assignment) {
+            console.log('evaluations', evaluations)
+
+            const evaluationObj = evaluations.find(e => e.trainingId === assignment.training.id);
+            const avg = evaluationObj?._avg?.evaluation ?? null;
+
+            const assignmentWithAvg = {
+                ...assignment,
+                training: {
+                    ...assignment.training,
+                    evaluation: avg
+                }
+            };
+
+            console.log('assignmentsWithAvg', assignmentWithAvg)
+
+            if (!assignmentWithAvg) {
                 return res.status(401).json({ message: "Treinamento não autorizado ou não encontrado." });
             }
 
-            return res.status(200).json(assignment);
+            return res.status(200).json(assignmentWithAvg);
         } catch (error) {
             console.error("Erro ao buscar execução de treinamento:", error);
             return res.status(500).json({ message: "Erro interno no servidor." });

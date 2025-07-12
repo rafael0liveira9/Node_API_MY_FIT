@@ -212,6 +212,7 @@ model trainingEvaluations {
   observation String?   @db.VarChar(255)
   createdAt   DateTime? @db.DateTime(0)
   situation   Int?      @default(1) @db.TinyInt
+  clientId    Int?
   training    training? @relation(fields: [trainingId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "trainingEvaluations_training_FK")
 
   @@index([trainingId], map: "trainingEvaluations_training_FK")
