@@ -184,17 +184,14 @@ const PostTrainingExecution = async (req, res) => {
         try {
             const difficultyStringfied = JSON.stringify(req.body.difficulty)
             let record;
-            if (Array.isArray(difficultyStringfied) && difficultyStringfied.length > 0) {
-                record = difficultyStringfied.reduce((max, item) => {
+            if (Array.isArray(req.body.difficulty) && req.body.difficulty.length > 0) {
+                record = req.body.difficulty.reduce((max, item) => {
                     const num = +item;
                     return num > max ? num : max;
                 }, -Infinity);
             } else {
                 record = null;
             }
-
-            console.log('record', record)
-            console.log('alreadySerie', alreadySerie?.personalRecord)
 
             const newExecution = await p.serieExecution.create({
                 data: {
@@ -204,6 +201,7 @@ const PostTrainingExecution = async (req, res) => {
                     difficulty: difficultyStringfied
                 }
             })
+
 
             if (!newExecution) {
                 return res.status(500).json({
@@ -216,7 +214,8 @@ const PostTrainingExecution = async (req, res) => {
                     id: req.body.exerciseId
                 },
                 data: {
-                    difficulty: JSON.stringify(req.body.difficulty)
+                    personalRecord: !!record && (alreadySerie.personalRecord === null || record > +alreadySerie.personalRecord) ? record.toString() : alreadySerie.personalRecord,
+                    difficulty: difficultyStringfied
                 }
             })
 
