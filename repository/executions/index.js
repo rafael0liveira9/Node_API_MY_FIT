@@ -218,7 +218,6 @@ const PostTrainingExecution = async (req, res) => {
     },
     GetExecutionById = async (req, res) => {
         const { id } = req.params;
-
         try {
             const adminCheck = await jwtUncrypt(req.headers.authorization);
 
@@ -250,6 +249,7 @@ const PostTrainingExecution = async (req, res) => {
                 return res.status(404).json({ message: "Execução de treinamento não encontrada." });
             }
 
+
             const assignment = await p.trainingAssignments.findFirst({
                 where: {
                     trainingId: trainingExecution.training?.id,
@@ -270,7 +270,10 @@ const PostTrainingExecution = async (req, res) => {
                                 include: {
                                     exercise: true,
                                     serieExecution: {
-                                        take: 1
+                                        take: 1,
+                                        where: {
+                                            executionId: +id
+                                        }
                                     }
                                 }
                             }

@@ -699,11 +699,7 @@ const PostExercise = async (req, res) => {
                         series: {
                             include: {
                                 exercise: true,
-                                serieExecution: {
-                                    where: {
-                                        executionId: +id
-                                    }
-                                },
+                                serieExecution: true,
                             }
                         }
                     }
