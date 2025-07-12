@@ -107,8 +107,6 @@ const PostTrainingExecution = async (req, res) => {
                 }
             })
 
-            console.log('newExecution', newExecution)
-
             let newEvaluation = null;
             if (!!req.body.evaluation && req.body.evaluation < 6 && !!alreadyUser.client?.id) {
                 console.log("1");
@@ -280,9 +278,8 @@ const PostTrainingExecution = async (req, res) => {
                     training: {
                         include: {
                             trainingEvaluations: {
-                                take: 1,
                                 where: {
-                                    clientId: alreadyUser?.id
+                                    clientId: alreadyUser.client?.id
                                 }
                             },
                             trainingExecution: {
@@ -306,7 +303,7 @@ const PostTrainingExecution = async (req, res) => {
                     }
                 }
             });
-            console.log('1', !!assignment)
+            console.log('1', assignment)
             const evaluations = await p.trainingEvaluations.groupBy({
                 by: ['trainingId'],
                 where: {
@@ -317,7 +314,6 @@ const PostTrainingExecution = async (req, res) => {
                 }
             });
 
-            console.log('evaluations', evaluations)
 
             const evaluationObj = evaluations.find(e => e.trainingId === assignment.training.id);
             const avg = evaluationObj?._avg?.evaluation ?? null;
@@ -330,7 +326,6 @@ const PostTrainingExecution = async (req, res) => {
                 }
             };
 
-            console.log('assignmentsWithAvg', assignmentWithAvg)
 
             if (!assignmentWithAvg) {
                 return res.status(401).json({ message: "Treinamento não autorizado ou não encontrado." });
