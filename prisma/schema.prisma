@@ -25,6 +25,8 @@ model client {
   situation                                                     Int                   @default(1) @db.TinyInt
   gender                                                        Int?                  @db.TinyInt
   birthDate                                                     DateTime?             @db.Timestamp(0)
+  userType                                                      Int                   @default(2)
+  type                                                          type                  @relation(fields: [userType], references: [id], onUpdate: Restrict, map: "client_type_FK")
   exercise                                                      exercise[]
   posts                                                         posts[]
   serieExecution                                                serieExecution[]
@@ -33,13 +35,16 @@ model client {
   trainingAssignments_trainingAssignments_responsibleIdToclient trainingAssignments[] @relation("trainingAssignments_responsibleIdToclient")
   trainingExecution                                             trainingExecution[]
   user                                                          user[]
+
+  @@index([userType], map: "client_type_FK")
 }
 
 model type {
-  id          Int     @id @default(autoincrement())
-  name        String  @db.VarChar(100)
-  description String? @db.VarChar(255)
-  situation   Int     @default(1) @db.TinyInt
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(100)
+  description String?  @db.VarChar(255)
+  situation   Int      @default(1) @db.TinyInt
+  client      client[]
   user        user[]
 }
 
@@ -51,7 +56,7 @@ model user {
   reply         String?   @db.VarChar(255)
   questionId    Int?
   clientId      Int
-  typeId        Int
+  typeId        Int?
   lastPaymentId Int?
   createdAt     DateTime  @default(now()) @db.Timestamp(0)
   updatedAt     DateTime? @db.Timestamp(0)
@@ -61,7 +66,7 @@ model user {
   inputCode     String?   @db.Char(10)
   client        client    @relation(fields: [clientId], references: [id], onUpdate: Restrict, map: "user_client_FK")
   questions     question? @relation(fields: [questionId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "user_questions_FK")
-  type          type      @relation(fields: [typeId], references: [id], onUpdate: Restrict, map: "user_type_FK")
+  type          type?     @relation(fields: [typeId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "user_type_FK")
 
   @@index([questionId], map: "user_questions_FK")
   @@index([typeId], map: "user_type_FK")

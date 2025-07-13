@@ -57,6 +57,7 @@ const GetAllPosts = async (req, res) => {
                         photo: true,
                         cref: true,
                         birthDate: true,
+                        userType: true,
                     }
                 }
             }
@@ -67,6 +68,7 @@ const GetAllPosts = async (req, res) => {
                 message: "Erro ao resgatar posts",
             });
         }
+
 
         await p.$disconnect();
         return res.status(200).json(posts);

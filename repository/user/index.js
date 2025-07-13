@@ -36,12 +36,6 @@ const GetUserById = async (req, res) => {
             updatedAt: true,
             deletedAt: true,
             client: true,
-            type: {
-                select: {
-                    id: true,
-                    name: true
-                }
-            }
         }
     })
 
@@ -77,12 +71,6 @@ const GetUserById = async (req, res) => {
             },
             include: {
                 client: true,
-                type: {
-                    select: {
-                        id: true,
-                        name: true,
-                    },
-                },
             },
         });
 
@@ -122,6 +110,7 @@ const GetUserById = async (req, res) => {
             const client = await p.client.create({
                 data: {
                     name: userData.name,
+                    userType: parseInt(type),
                 }
             });
 
@@ -130,7 +119,6 @@ const GetUserById = async (req, res) => {
                     data: {
                         email: userData.email,
                         password: hashSync(userData.password, 8),
-                        typeId: parseInt(type),
                         clientId: client.id,
                     }
                 })
@@ -143,7 +131,7 @@ const GetUserById = async (req, res) => {
                         name: client.name,
                         nick: client.nick,
                         email: user.email,
-                        type: user.typeId
+                        type: client.userType
                     }, process.env.SECRET_CLIENT_KEY)
 
                     return res.status(201).json({
@@ -205,7 +193,7 @@ const GetUserById = async (req, res) => {
                 name: alreadyUser?.client.name,
                 nick: alreadyUser?.client.nick,
                 email: alreadyUser.email,
-                type: alreadyUser.typeId
+                type: alreadyUser?.client?.userType
             }, process.env.SECRET_CLIENT_KEY)
 
             return res.status(200).json({
@@ -215,7 +203,7 @@ const GetUserById = async (req, res) => {
                     email: alreadyUser.email,
                     name: alreadyUser.client.name,
                     nick: alreadyUser.client.nick,
-                    type: alreadyUser.typeId,
+                    type: alreadyUser?.client?.userType,
                     token: alreadyUser.token,
                 }
             });
