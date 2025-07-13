@@ -165,6 +165,7 @@ model trainingAssignments {
   updatedAt                                        DateTime? @db.DateTime(0)
   deletedAt                                        DateTime? @db.DateTime(0)
   CompanyResposibleId                              Int?
+  maxExecutions                                    Int?
   client_trainingAssignments_clientIdToclient      client    @relation("trainingAssignments_clientIdToclient", fields: [clientId], references: [id], onUpdate: Restrict, map: "trainingAssignments_client_FK")
   client_trainingAssignments_responsibleIdToclient client?   @relation("trainingAssignments_responsibleIdToclient", fields: [responsibleId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "trainingAssignments_client_FK_1")
   training                                         training  @relation(fields: [trainingId], references: [id], onUpdate: Restrict, map: "trainingAssignments_training_FK")
