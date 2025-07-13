@@ -26,6 +26,7 @@ model client {
   gender                                                        Int?                  @db.TinyInt
   birthDate                                                     DateTime?             @db.Timestamp(0)
   exercise                                                      exercise[]
+  posts                                                         posts[]
   serieExecution                                                serieExecution[]
   training                                                      training[]
   trainingAssignments_trainingAssignments_clientIdToclient      trainingAssignments[] @relation("trainingAssignments_clientIdToclient")
@@ -218,4 +219,20 @@ model trainingEvaluations {
   training    training? @relation(fields: [trainingId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "trainingEvaluations_training_FK")
 
   @@index([trainingId], map: "trainingEvaluations_training_FK")
+}
+
+model posts {
+  id          Int       @id @default(autoincrement())
+  title       String?   @db.VarChar(100)
+  description String?   @db.VarChar(255)
+  image       String?   @db.VarChar(100)
+  video       String?   @db.VarChar(100)
+  authorId    Int?
+  createdAt   DateTime? @default(now()) @db.DateTime(0)
+  updatedAt   DateTime? @db.DateTime(0)
+  situation   Int?      @default(1) @db.TinyInt
+  type        Int?      @default(1) @db.TinyInt
+  client      client?   @relation(fields: [authorId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "posts_client_FK")
+
+  @@index([authorId], map: "posts_client_FK")
 }

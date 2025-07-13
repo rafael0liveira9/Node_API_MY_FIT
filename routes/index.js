@@ -4,6 +4,7 @@ const { Router, json, urlencoded } = require('express'),
     user = require('../repository/user'),
     exercises = require('../repository/exercises'),
     executions = require('../repository/executions'),
+    posts = require('../repository/posts'),
     s3 = require('../repository/s3'),
     router = Router();
 
@@ -49,5 +50,8 @@ router.get('/execution/:id', async (req, res) => executions.GetExecutionById(req
     router.post('/execution-training', async (req, res) => executions.PostTrainingExecution(req, res)),
     router.post('/execution-exercise', async (req, res) => executions.PostExerciseExecution(req, res)),
     router.put('/complete-execution-training', async (req, res) => executions.CompleteTrainingExecution(req, res));
+
+// *********************************************************************************************** POST ROUTES
+router.get('/posts', async (req, res) => posts.GetAllPosts(req, res));
 
 module.exports = router
