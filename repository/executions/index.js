@@ -276,6 +276,7 @@ const PostTrainingExecution = async (req, res) => {
                 include: {
                     training: {
                         include: {
+                            user: true,
                             trainingEvaluations: {
                                 where: {
                                     clientId: alreadyUser.client?.id
