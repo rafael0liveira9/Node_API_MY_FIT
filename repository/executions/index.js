@@ -282,6 +282,9 @@ const PostTrainingExecution = async (req, res) => {
                                 }
                             },
                             trainingExecution: {
+                                where: {
+                                    clientId: alreadyUser.client?.id
+                                },
                                 take: 1,
                                 orderBy: {
                                     startAt: 'desc'
@@ -302,7 +305,15 @@ const PostTrainingExecution = async (req, res) => {
                     }
                 }
             });
-            console.log('1', assignment)
+            console.log('1')
+            const totalMyExecutions = await p.trainingExecution.count({
+                where: {
+                    clientId: alreadyUser.client?.id,
+                    trainingId: trainingExecution.training?.id,
+                }
+            });
+
+            console.log('1', totalMyExecutions)
             const evaluations = await p.trainingEvaluations.groupBy({
                 by: ['trainingId'],
                 where: {
@@ -319,10 +330,11 @@ const PostTrainingExecution = async (req, res) => {
 
             const assignmentWithAvg = {
                 ...assignment,
+                executionsCount: totalMyExecutions,
                 training: {
                     ...assignment.training,
-                    evaluation: avg
-                }
+                    evaluation: avg,
+                },
             };
 
 
