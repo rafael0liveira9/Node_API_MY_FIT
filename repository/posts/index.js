@@ -68,28 +68,29 @@ const GetAllPosts = async (req, res) => {
                 message: "Erro ao resgatar posts",
             });
         }
+
         const PRIORITY_MAP = {
             1: 4, // mais prioridade
             4: 3,
             3: 2,
-            2: 1, // menos prioridade
+            2: 1,
         };
 
-        // 1. Ordena por data + prioridade
         posts.sort((a, b) => {
-            const dateA = new Date(a.createdAt).getTime();
-            const dateB = new Date(b.createdAt).getTime();
+            const priorityA = PRIORITY_MAP[a.client.userType] || 0;
+            const priorityB = PRIORITY_MAP[b.client.userType] || 0;
 
-            if (dateA === dateB) {
-                const priorityA = PRIORITY_MAP[a.client.userType] || 0;
-                const priorityB = PRIORITY_MAP[b.client.userType] || 0;
-                return priorityB - priorityA; // maior prioridade primeiro
+            if (priorityA !== priorityB) {
+                return priorityB - priorityA; // prioridade maior primeiro
             }
 
-            return dateB - dateA; // mais recente primeiro
+            // Se empatar, ordena pela data (mais novo primeiro)
+            const dateA = new Date(a.createdAt).getTime();
+            const dateB = new Date(b.createdAt).getTime();
+            return dateB - dateA;
         });
 
-        // 2. Move posts das últimas 12 horas pro topo
+        // Depois, move os das últimas 12h pro topo
         const now = new Date();
         const TWELVE_HOURS = 12 * 60 * 60 * 1000;
 
@@ -100,7 +101,7 @@ const GetAllPosts = async (req, res) => {
             (post) => now.getTime() - new Date(post.createdAt).getTime() > TWELVE_HOURS
         );
 
-        // Junta os dois mantendo a ordem
+        // Resultado final
         const finalSortedPosts = [...recentPosts, ...otherPosts];
 
         await p.$disconnect();
