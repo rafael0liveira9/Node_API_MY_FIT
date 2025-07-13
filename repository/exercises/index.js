@@ -716,7 +716,47 @@ const PostExercise = async (req, res) => {
             return res.status(401).json(null);
         }
 
+    },
+    EvaluationUpdate = async (req, res) => {
+        const adminCheck = await jwtUncrypt(req.headers.authorization)
+
+        if (!adminCheck?.user) {
+            return res.status(403).json({
+                message: "Usuário não autorizado."
+            });
+        }
+
+        const alreadyUser = await p.user.findFirst({
+            where: {
+                id: adminCheck?.user?.id,
+                situation: 1,
+                deletedAt: null
+            },
+            include: {
+                client: true
+            }
+        });
+
+        const data = await p.trainingEvaluations.update({
+            where: {
+                id: req.body.id,
+                clientId: alreadyUser.client?.id
+            },
+            data: {
+                evaluation: req.body.evaluation,
+                observation: req.body.observation,
+                updatedAt: new Date()
+            }
+        })
+
+        if (data) {
+            await p.$disconnect();
+            return res.status(201).json(data);
+        } else {
+            await p.$disconnect();
+            return res.status(401).json(null);
+        }
     }
 
 
-module.exports = { PostExercise, PostTraining, PostSerie, GetAllGroups, GetExercisesByGroup, PostExercisesOnGroup, PutTraining, TrainingPhotoUpdate, GetMyTrainings, GetTrainingById, DeleteTraining, GetAllExercises, PutSerie };
+module.exports = { PostExercise, PostTraining, PostSerie, GetAllGroups, GetExercisesByGroup, PostExercisesOnGroup, PutTraining, TrainingPhotoUpdate, GetMyTrainings, GetTrainingById, DeleteTraining, GetAllExercises, PutSerie, EvaluationUpdate };
