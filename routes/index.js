@@ -52,6 +52,8 @@ router.get('/execution/:id', async (req, res) => executions.GetExecutionById(req
     router.put('/complete-execution-training', async (req, res) => executions.CompleteTrainingExecution(req, res));
 
 // *********************************************************************************************** POST ROUTES
-router.get('/posts', async (req, res) => posts.GetAllPosts(req, res));
+router.get('/posts', async (req, res) => posts.GetAllPosts(req, res)),
+    router.post('/post', async (req, res) => posts.PostPostkk(req, res)),
+    router.put('/post', async (req, res) => posts.PutPostkk(req, res));
 
 module.exports = router

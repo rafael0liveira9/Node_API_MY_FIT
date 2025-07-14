@@ -26,8 +26,10 @@ model client {
   gender                                                        Int?                  @db.TinyInt
   birthDate                                                     DateTime?             @db.Timestamp(0)
   userType                                                      Int                   @default(2)
+  bannedUntil                                                   DateTime?             @db.DateTime(0)
   type                                                          type                  @relation(fields: [userType], references: [id], onUpdate: Restrict, map: "client_type_FK")
   exercise                                                      exercise[]
+  forbiddenAlerts                                               forbiddenAlerts[]
   posts                                                         posts[]
   serieExecution                                                serieExecution[]
   training                                                      training[]
@@ -227,17 +229,36 @@ model trainingEvaluations {
 }
 
 model posts {
-  id          Int       @id @default(autoincrement())
-  title       String?   @db.VarChar(100)
-  description String?   @db.VarChar(255)
-  image       String?   @db.VarChar(100)
-  video       String?   @db.VarChar(100)
-  authorId    Int?
-  createdAt   DateTime? @default(now()) @db.DateTime(0)
-  updatedAt   DateTime? @db.DateTime(0)
-  situation   Int?      @default(1) @db.TinyInt
-  type        Int?      @default(1) @db.TinyInt
-  client      client?   @relation(fields: [authorId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "posts_client_FK")
+  id              Int               @id @default(autoincrement())
+  title           String?           @db.VarChar(100)
+  description     String?           @db.VarChar(255)
+  image           String?           @db.VarChar(100)
+  video           String?           @db.VarChar(100)
+  authorId        Int?
+  createdAt       DateTime?         @default(now()) @db.DateTime(0)
+  updatedAt       DateTime?         @db.DateTime(0)
+  situation       Int?              @default(1) @db.TinyInt
+  type            Int?              @default(1) @db.TinyInt
+  forbiddenAlerts forbiddenAlerts[]
+  client          client?           @relation(fields: [authorId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "posts_client_FK")
 
   @@index([authorId], map: "posts_client_FK")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model forbiddenAlerts {
+  id            Int       @id @default(autoincrement())
+  clientId      Int?
+  text          String?   @db.VarChar(255)
+  createdAt     DateTime  @default(now()) @db.DateTime(0)
+  status        String    @default("1") @db.VarChar(100)
+  postId        Int?
+  postCommentId Int?
+  updatedText   String?   @db.VarChar(255)
+  updatedAt     DateTime? @db.DateTime(0)
+  client        client?   @relation(fields: [clientId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "forbiddenAlerts_client_FK")
+  posts         posts?    @relation(fields: [postId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "forbiddenAlerts_posts_FK")
+
+  @@index([clientId], map: "forbiddenAlerts_client_FK")
+  @@index([postId], map: "forbiddenAlerts_posts_FK")
 }

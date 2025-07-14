@@ -1,5 +1,6 @@
 const { json } = require('body-parser');
 const exercises = require('../exercises');
+const { textCheck } = require('../../utils');
 const { jwtUncrypt } = require('../../utils/midleware/auth'),
     { PrismaClient } = require("@prisma/client"),
     p = new PrismaClient(),
@@ -70,7 +71,7 @@ const GetAllPosts = async (req, res) => {
         }
 
         const PRIORITY_MAP = {
-            1: 4, // mais prioridade
+            1: 4,
             4: 3,
             3: 2,
             2: 1,
@@ -81,16 +82,14 @@ const GetAllPosts = async (req, res) => {
             const priorityB = PRIORITY_MAP[b.client.userType] || 0;
 
             if (priorityA !== priorityB) {
-                return priorityB - priorityA; // prioridade maior primeiro
+                return priorityB - priorityA;
             }
 
-            // Se empatar, ordena pela data (mais novo primeiro)
             const dateA = new Date(a.createdAt).getTime();
             const dateB = new Date(b.createdAt).getTime();
             return dateB - dateA;
         });
 
-        // Depois, move os das últimas 12h pro topo
         const now = new Date();
         const TWELVE_HOURS = 12 * 60 * 60 * 1000;
 
@@ -101,7 +100,6 @@ const GetAllPosts = async (req, res) => {
             (post) => now.getTime() - new Date(post.createdAt).getTime() > TWELVE_HOURS
         );
 
-        // Resultado final
         const finalSortedPosts = [...recentPosts, ...otherPosts];
 
         await p.$disconnect();
@@ -114,8 +112,230 @@ const GetAllPosts = async (req, res) => {
         });
     }
 
+}, PostPostkk = async (req, res) => {
+    console.log("PostPostkk 🚀");
+
+    // 1. Verificação de autenticação
+    if (!req.headers.authorization) {
+        return res.status(401).json({ message: "JWT é necessário." });
+    }
+
+    const user = await jwtUncrypt(req.headers.authorization);
+
+    if (!user?.user?.id) {
+        return res.status(401).json({ message: "Usuário não encontrado." });
+    }
+
+    // 2. Busca do usuário + cliente associado
+    const alreadyClient = await p.user.findFirst({
+        where: {
+            id: user.user.id,
+            deletedAt: null,
+        },
+        include: {
+            client: true,
+        },
+    });
+
+    if (!alreadyClient?.client?.id) {
+        return res.status(403).json({ message: "Cliente não autorizado." });
+    }
+
+    try {
+        // 3. Censura e verificação de texto
+        let censored = false;
+        let titleChecked = req.body.title || "";
+        let descriptionChecked = req.body.description || "";
+        let imageUpload;
+
+        if (req.body.title && req.body.description) {
+            const titleResult = textCheck(req.body.title);
+            const descriptionResult = textCheck(req.body.description);
+
+            censored = !titleResult.ok || !descriptionResult.ok;
+            titleChecked = titleResult.text;
+            descriptionChecked = descriptionResult.text;
+        }
+
+        console.log("🔒 Censurado?", censored);
+        console.log("📝 Título:", titleChecked);
+        console.log("📝 Descrição:", descriptionChecked);
+
+        if (req.body.image) {
+            const file = req.body.image;
+            const path = `posts/${alreadyClient.client.id}`;
+            imageUpload = await uploadImage(file, path);
+        }
+
+        if (titleChecked || descriptionChecked || imageUpload?.Location) {
+            const post = await p.posts.create({
+                data: {
+                    authorId: alreadyClient.client.id,
+                    title: titleChecked || null,
+                    description: descriptionChecked || null,
+                    image: imageUpload?.Location || null,
+                },
+            });
+
+            if (!post) {
+                return res.status(500).json({ message: "Erro ao salvar post." });
+            }
+
+            if (censored === true) {
+                await p.forbiddenAlerts.create({
+                    data: {
+                        text: `${req.body.title ?? ''} |-| ${req.body.description ?? ''}`,
+                        postId: post.id,
+                        clientId: alreadyClient.client.id,
+                    },
+                });
+            }
+
+            await p.$disconnect();
+            return res.status(200).json({ post, censored });
+        }
+
+
+        return res.status(400).json({
+            message: "É necessário enviar título, descrição ou imagem.",
+        });
+    } catch (error) {
+        await p.$disconnect();
+        console.error("❌ Erro ao postar:", error);
+
+        return res.status(500).json({ message: "Erro ao iniciar execução." });
+    }
+}, PutPostkk = async (req, res) => {
+    console.log("PostPostkk 🚀");
+
+    if (!req.headers.authorization) {
+        return res.status(401).json({ message: "JWT é necessário." });
+    }
+
+    const user = await jwtUncrypt(req.headers.authorization);
+
+    if (!user?.user?.id) {
+        return res.status(401).json({ message: "Usuário não encontrado." });
+    }
+
+    const alreadyClient = await p.user.findFirst({
+        where: {
+            id: user.user.id,
+            deletedAt: null,
+        },
+        include: {
+            client: true,
+        },
+    });
+
+    if (!alreadyClient?.client?.id) {
+        return res.status(403).json({ message: "Cliente não autorizado." });
+    }
+
+    const alreadyPost = await p.posts.findFirst({
+        where: {
+            id: req.body.id,
+            situation: 1,
+        },
+        include: {
+            forbiddenAlerts: true
+        }
+    });
+
+    if (!alreadyPost?.id) {
+        return res.status(403).json({ message: "Post não existe." });
+    }
+
+    console.log('alreadyPost', alreadyPost)
+
+    try {
+        // 3. Censura e verificação de texto
+        let censored = false;
+        let titleChecked = req.body.title || "";
+        let descriptionChecked = req.body.description || "";
+        let imageUpload;
+
+        if (req.body.title && req.body.description) {
+            const titleResult = textCheck(req.body.title);
+            const descriptionResult = textCheck(req.body.description);
+
+            censored = !titleResult.ok || !descriptionResult.ok;
+            titleChecked = titleResult.text;
+            descriptionChecked = descriptionResult.text;
+        }
+
+        console.log("🔒 Censurado?", censored);
+        console.log("📝 Título:", titleChecked);
+        console.log("📝 Descrição:", descriptionChecked);
+
+        if (req.body.image) {
+            const file = req.body.image;
+            const path = `posts/${alreadyClient.client.id}`;
+            imageUpload = await uploadImage(file, path);
+        }
+
+        if (titleChecked || descriptionChecked || imageUpload?.Location) {
+            const post = await p.posts.update({
+                where: { id: alreadyPost.id },
+                data: {
+                    authorId: alreadyClient.client.id,
+                    title: titleChecked || null,
+                    description: descriptionChecked || null,
+                    image: imageUpload?.Location || null,
+                },
+            });
+
+            if (!post) {
+                return res.status(500).json({ message: "Erro ao salvar post." });
+            }
+
+
+            if (Array.isArray(alreadyPost?.forbiddenAlerts) && alreadyPost.forbiddenAlerts.length > 0) {
+                const lastAlert = await p.forbiddenAlerts.findFirst({
+                    where: { postId: alreadyPost.id },
+                    orderBy: { createdAt: 'desc' },
+                });
+
+                console.log('lastAlert', lastAlert)
+
+                if (lastAlert) {
+                    await p.forbiddenAlerts.update({
+                        where: { id: lastAlert.id },
+                        data: {
+                            updatedText: `${req.body.title ?? ''} |-| ${req.body.description ?? ''}`,
+                            updatedAt: new Date(),
+                        },
+                    });
+                }
+            }
+
+
+            if (censored === true) {
+                await p.forbiddenAlerts.create({
+                    data: {
+                        text: `${req.body.title ?? ''} |-| ${req.body.description ?? ''}`,
+                        postId: alreadyPost.id,
+                        clientId: alreadyClient.client.id,
+                    },
+                });
+            }
+
+            await p.$disconnect();
+            return res.status(200).json({ post, censored });
+        }
+
+
+        return res.status(400).json({
+            message: "É necessário enviar título, descrição ou imagem.",
+        });
+    } catch (error) {
+        await p.$disconnect();
+        console.error("❌ Erro ao postar:", error);
+
+        return res.status(500).json({ message: "Erro ao iniciar execução." });
+    }
 };
 
 
 
-module.exports = { GetAllPosts };
+module.exports = { GetAllPosts, PostPostkk, PutPostkk };
