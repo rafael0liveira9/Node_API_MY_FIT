@@ -174,6 +174,7 @@ const GetAllPosts = async (req, res) => {
                     title: titleChecked || null,
                     description: descriptionChecked || null,
                     image: imageUpload?.Location || null,
+                    type: req.body.type || 1
                 },
             });
 
@@ -246,7 +247,6 @@ const GetAllPosts = async (req, res) => {
         return res.status(403).json({ message: "Post não existe." });
     }
 
-    console.log('alreadyPost', alreadyPost)
 
     try {
         // 3. Censura e verificação de texto
@@ -282,6 +282,7 @@ const GetAllPosts = async (req, res) => {
                     title: titleChecked || null,
                     description: descriptionChecked || null,
                     image: imageUpload?.Location || null,
+                    type: req.body.type || alreadyPost.type
                 },
             });
 
