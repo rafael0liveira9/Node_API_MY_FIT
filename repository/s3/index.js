@@ -18,8 +18,11 @@ const uploadImage = async (file, path) => {
         const file = req.file;
         const path = req.body?.path || 'error-path';
 
+        console.log('uploaddd')
+
         try {
             const result = await uploadImage(file, path);
+            console.log('uploaddd', result.Location)
             res.json({ url: result.Location });
         } catch (error) {
             console.error(error);
