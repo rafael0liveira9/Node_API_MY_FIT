@@ -142,7 +142,7 @@ const GetAllPosts = async (req, res) => {
     try {
         const posts = await p.posts.findMany({
             where: {
-                id: alreadyClient.client.id,
+                authorId: alreadyClient.client.id,
                 situation: 1
             },
             orderBy: {
