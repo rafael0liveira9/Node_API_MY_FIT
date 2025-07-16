@@ -26,6 +26,6 @@ const uploadImage = async (file, path) => {
             res.status(500).json({ message: 'Erro no upload' });
         }
 
-    };
+    }
 
 module.exports = { uploadImage, ImportImageToS3 };

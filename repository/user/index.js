@@ -14,7 +14,7 @@ const GetUserById = async (req, res) => {
 
     const adminCheck = await jwtUncrypt(req.headers.authorization)
 
-    if (!adminCheck?.user?.type || adminCheck?.user?.type != 1) {
+    if (!adminCheck?.user) {
         return res.status(403).json({
             message: "Usuário não autorizado."
         });
@@ -219,20 +219,12 @@ const GetUserById = async (req, res) => {
         const adminCheck = await jwtUncrypt(req.headers.authorization)
         let editId;
 
-        if (!adminCheck?.user?.type) {
+        if (!adminCheck?.user) {
             return res.status(401).json({
                 message: "Usuário não encontrado."
             });
         } else {
-            if (adminCheck?.user?.type == 1 && !!req?.body?.id) {
-                editId = req.body.id
-            } else if (!!adminCheck?.user?.id) {
-                editId = adminCheck?.user?.id
-            } else {
-                return res.status(401).json({
-                    message: "Usuário não encontrado."
-                });
-            }
+            editId = adminCheck?.user?.id
         }
 
         const userData = req.body;
@@ -298,20 +290,12 @@ const GetUserById = async (req, res) => {
         const adminCheck = await jwtUncrypt(req.headers.authorization)
         let editId;
 
-        if (!adminCheck?.user?.type) {
+        if (!adminCheck?.user) {
             return res.status(401).json({
                 message: "Usuário não encontrado."
             });
         } else {
-            if (adminCheck?.user?.type == 1 && !!req?.body?.id) {
-                editId = req.body.id
-            } else if (!!adminCheck?.user?.id) {
-                editId = adminCheck?.user?.id
-            } else {
-                return res.status(401).json({
-                    message: "Usuário não encontrado."
-                });
-            }
+            editId = adminCheck?.user?.id
         }
 
         const alreadyUser = await p.user.findFirst({
@@ -362,7 +346,7 @@ const GetUserById = async (req, res) => {
         let deleteUser;
         let deleteClient;
 
-        if (!adminCheck?.user?.type || adminCheck?.user?.type != 1) {
+        if (!adminCheck?.user) {
             return res.status(401).json({
                 message: "Usuário não autorizado."
             });
@@ -447,12 +431,12 @@ const GetUserById = async (req, res) => {
         const adminCheck = await jwtUncrypt(req.headers.authorization)
 
 
-        if (!adminCheck?.user?.type) {
+        if (!adminCheck?.user) {
             return res.status(401).json({
                 message: "Usuário não encontrado."
             });
         } else {
-            if (adminCheck?.user?.type == 1 && !!req?.body?.id) {
+            if (adminCheck?.user) {
                 editId = req.body.id
             } else if (!!adminCheck?.user?.id) {
                 editId = adminCheck?.user?.id
@@ -513,20 +497,12 @@ const GetUserById = async (req, res) => {
         const adminCheck = await jwtUncrypt(req.headers.authorization)
 
 
-        if (!adminCheck?.user?.type) {
+        if (!adminCheck?.user) {
             return res.status(401).json({
                 message: "Usuário não encontrado."
             });
         } else {
-            if (adminCheck?.user?.type == 1 && !!req?.body?.id) {
-                editId = req.body.id
-            } else if (!!adminCheck?.user?.id) {
-                editId = adminCheck?.user?.id
-            } else {
-                return res.status(401).json({
-                    message: "Usuário não encontrado."
-                });
-            }
+            editId = adminCheck?.user?.id
         }
 
         const alreadyUser = await p.user.findFirst({

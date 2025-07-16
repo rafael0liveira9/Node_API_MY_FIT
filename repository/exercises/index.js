@@ -487,7 +487,7 @@ const PostExercise = async (req, res) => {
         const adminCheck = await jwtUncrypt(req.headers.authorization)
 
 
-        if (!adminCheck?.user?.type) {
+        if (!adminCheck?.user) {
             return res.status(401).json({
                 message: "Usuário não encontrado."
             });
