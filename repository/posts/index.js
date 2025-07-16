@@ -151,7 +151,10 @@ const GetAllPosts = async (req, res) => {
         })
 
         await p.$disconnect();
-        return res.status(200).json(posts);
+        return res.status(200).json({
+            alreadyClient,
+            posts
+        });
     } catch (error) {
         await p.$disconnect();
         console.log(error)
