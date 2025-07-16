@@ -139,10 +139,8 @@ const GetAllPosts = async (req, res) => {
         }
     })
 
-    console.log('alreadyClient', alreadyClient)
-
     try {
-        const posts = await p.posts.findFirst({
+        const posts = await p.posts.findMany({
             where: {
                 id: alreadyClient.client.id,
                 situation: 1
