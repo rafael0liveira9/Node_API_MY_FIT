@@ -165,7 +165,6 @@ const GetAllPosts = async (req, res) => {
 }, PostPostkk = async (req, res) => {
     console.log("PostPostkk 🚀");
 
-    // 1. Verificação de autenticação
     if (!req.headers.authorization) {
         return res.status(401).json({ message: "JWT é necessário." });
     }
@@ -176,7 +175,6 @@ const GetAllPosts = async (req, res) => {
         return res.status(401).json({ message: "Usuário não encontrado." });
     }
 
-    // 2. Busca do usuário + cliente associado
     const alreadyClient = await p.user.findFirst({
         where: {
             id: user.user.id,
@@ -192,7 +190,6 @@ const GetAllPosts = async (req, res) => {
     }
 
     try {
-        // 3. Censura e verificação de texto
         let censored = false;
         let titleChecked = req.body.title || "";
         let descriptionChecked = req.body.description || "";
@@ -211,19 +208,14 @@ const GetAllPosts = async (req, res) => {
         console.log("📝 Título:", titleChecked);
         console.log("📝 Descrição:", descriptionChecked);
 
-        if (req.body.image) {
-            const file = req.body.image;
-            const path = `posts/${alreadyClient.client.id}`;
-            imageUpload = await uploadImage(file, path);
-        }
 
-        if (titleChecked || descriptionChecked || imageUpload?.Location) {
+        if (titleChecked || descriptionChecked || req.body.image) {
             const post = await p.posts.create({
                 data: {
                     authorId: alreadyClient.client.id,
                     title: titleChecked || null,
                     description: descriptionChecked || null,
-                    image: imageUpload?.Location || null,
+                    image: req.body.image || null,
                     type: req.body.type || 1
                 },
             });
@@ -299,7 +291,6 @@ const GetAllPosts = async (req, res) => {
 
 
     try {
-        // 3. Censura e verificação de texto
         let censored = false;
         let titleChecked = req.body.title || "";
         let descriptionChecked = req.body.description || "";
@@ -318,20 +309,15 @@ const GetAllPosts = async (req, res) => {
         console.log("📝 Título:", titleChecked);
         console.log("📝 Descrição:", descriptionChecked);
 
-        if (req.body.image) {
-            const file = req.body.image;
-            const path = `posts/${alreadyClient.client.id}`;
-            imageUpload = await uploadImage(file, path);
-        }
 
-        if (titleChecked || descriptionChecked || imageUpload?.Location) {
+        if (titleChecked || descriptionChecked || req.body.image) {
             const post = await p.posts.update({
                 where: { id: alreadyPost.id },
                 data: {
                     authorId: alreadyClient.client.id,
                     title: titleChecked || null,
                     description: descriptionChecked || null,
-                    image: imageUpload?.Location || null,
+                    image: req.body.image || null,
                     type: req.body.type || alreadyPost.type
                 },
             });
