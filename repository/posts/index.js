@@ -112,6 +112,56 @@ const GetAllPosts = async (req, res) => {
         });
     }
 
+}, GetMyPosts = async (req, res) => {
+    console.log('GetMyPosts 🚀')
+
+    if (!req.headers.authorization) {
+        return res.status(500).json({
+            message: "JWT é necessário."
+        });
+    }
+
+    const user = await jwtUncrypt(req.headers.authorization)
+
+    if (!user?.user?.id) {
+        return res.status(401).json({
+            message: "Usuário não encontrado."
+        });
+    }
+
+    const alreadyClient = await p.user.findFirst({
+        where: {
+            id: user.user.id,
+            deletedAt: null
+        },
+        include: {
+            client: true
+        }
+    })
+
+    console.log('alreadyClient', alreadyClient)
+
+    try {
+        const posts = await p.posts.findFirst({
+            where: {
+                id: alreadyClient.client.id,
+                situation: 1
+            },
+            orderBy: {
+                createdAt: 'desc'
+            }
+        })
+
+        await p.$disconnect();
+        return res.status(200).json(posts);
+    } catch (error) {
+        await p.$disconnect();
+        console.log(error)
+        return res.status(500).json({
+            message: "Erro ao iniciar execução"
+        });
+    }
+
 }, PostPostkk = async (req, res) => {
     console.log("PostPostkk 🚀");
 
@@ -339,4 +389,4 @@ const GetAllPosts = async (req, res) => {
 
 
 
-module.exports = { GetAllPosts, PostPostkk, PutPostkk };
+module.exports = { GetAllPosts, PostPostkk, PutPostkk, GetMyPosts };

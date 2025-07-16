@@ -53,6 +53,7 @@ router.get('/execution/:id', async (req, res) => executions.GetExecutionById(req
 
 // *********************************************************************************************** POST ROUTES
 router.get('/posts', async (req, res) => posts.GetAllPosts(req, res)),
+    router.get('/my-posts', async (req, res) => posts.GetMyPosts(req, res)),
     router.post('/post', async (req, res) => posts.PostPostkk(req, res)),
     router.put('/post', async (req, res) => posts.PutPostkk(req, res));
 
