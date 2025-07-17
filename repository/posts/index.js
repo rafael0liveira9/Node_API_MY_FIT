@@ -372,8 +372,70 @@ const GetAllPosts = async (req, res) => {
 
         return res.status(500).json({ message: "Erro ao iniciar execução." });
     }
+}, DeletePostkk = async (req, res) => {
+    console.log("PostPostkk 🚀");
+
+    if (!req.headers.authorization) {
+        return res.status(401).json({ message: "JWT é necessário." });
+    }
+
+    const user = await jwtUncrypt(req.headers.authorization);
+
+    if (!user?.user?.id) {
+        return res.status(401).json({ message: "Usuário não encontrado." });
+    }
+
+    const alreadyClient = await p.user.findFirst({
+        where: {
+            id: user.user.id,
+            deletedAt: null,
+        },
+        include: {
+            client: true,
+        },
+    });
+
+    if (!alreadyClient?.client?.id) {
+        return res.status(403).json({ message: "Cliente não autorizado." });
+    }
+
+    const alreadyPost = await p.posts.findFirst({
+        where: {
+            id: req.body.id,
+            situation: 1,
+        },
+        include: {
+            forbiddenAlerts: true
+        }
+    });
+
+    if (!alreadyPost?.id) {
+        return res.status(403).json({ message: "Post não existe." });
+    }
+
+
+    try {
+        const deletePost = await p.posts.update({
+            where: { id: alreadyPost.id },
+            data: {
+                situation: 0
+            },
+        });
+
+        if (!!deletePost) {
+            console.log('deletePost', deletePost)
+            return res.status(200).json({
+                message: "Post deletado.",
+            });
+        }
+    } catch (error) {
+        await p.$disconnect();
+        console.error("❌ Erro ao postar:", error);
+
+        return res.status(500).json({ message: "Erro ao iniciar execução." });
+    }
 };
 
 
 
-module.exports = { GetAllPosts, PostPostkk, PutPostkk, GetMyPosts };
+module.exports = { GetAllPosts, PostPostkk, PutPostkk, GetMyPosts, DeletePostkk };

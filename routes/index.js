@@ -42,7 +42,7 @@ router.get('/groups', async (req, res) => exercises.GetAllGroups(req, res)),
     router.put('/training', async (req, res) => exercises.PutTraining(req, res)),
     router.put('/evaluation-update', async (req, res) => exercises.EvaluationUpdate(req, res)),
     router.put('/serie', async (req, res) => exercises.PutSerie(req, res)),
-    router.put('/delete-training', async (req, res) => exercises.DeleteTraining(req, res));
+    router.put('/unassign-training', async (req, res) => exercises.DeleteTraining(req, res));
 
 
 // *********************************************************************************************** EXECUTION ROUTES
@@ -55,6 +55,7 @@ router.get('/execution/:id', async (req, res) => executions.GetExecutionById(req
 router.get('/posts', async (req, res) => posts.GetAllPosts(req, res)),
     router.get('/my-posts', async (req, res) => posts.GetMyPosts(req, res)),
     router.post('/post', async (req, res) => posts.PostPostkk(req, res)),
-    router.put('/post', async (req, res) => posts.PutPostkk(req, res));
+    router.put('/post', async (req, res) => posts.PutPostkk(req, res)),
+    router.put('/delete-post', async (req, res) => posts.DeletePostkk(req, res));
 
 module.exports = router

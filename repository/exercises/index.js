@@ -328,15 +328,13 @@ const PostExercise = async (req, res) => {
             return res.status(401).json({ message: "Usuário não encontrado." });
         }
 
-        const { id, name, description, level, url, photo } = req.body;
+        const { id } = req.body;
 
         try {
-            const alreadyHave = await p.training.findFirst({
+
+            const alreadyHave = await p.trainingAssignments.findFirst({
                 where: {
                     id: id,
-                    authorId: userId,
-                    deletedAt: null,
-                    situation: 1
                 }
             });
 
@@ -346,15 +344,16 @@ const PostExercise = async (req, res) => {
                 });
             }
 
-            const newTraining = await p.training.update({
+            const deleteTraining = await p.trainingAssignments.update({
                 where: {
                     id: alreadyHave.id
                 },
                 data: {
-                    situation: 1,
+                    situation: 0,
                     deletedAt: new Date()
                 }
             });
+
             return res.status(200).json({
                 status: 200,
                 message: "Treino deletado com sucesso"
