@@ -315,9 +315,8 @@ const GetAllPosts = async (req, res) => {
             const post = await p.posts.update({
                 where: { id: alreadyPost.id },
                 data: {
-                    authorId: alreadyClient.client.id,
-                    title: titleChecked || null,
-                    description: descriptionChecked || null,
+                    title: titleChecked || alreadyPost.title,
+                    description: descriptionChecked || alreadyPost.description,
                     image: req.body.image || alreadyPost.image,
                     type: req.body.type || alreadyPost.type
                 },
