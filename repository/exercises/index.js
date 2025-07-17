@@ -207,8 +207,6 @@ const PostExercise = async (req, res) => {
                 }
             });
 
-            console.log('alreadyUser', alreadyUser)
-
             const alreadyHave = await p.training.findFirst({
                 where: {
                     name: name,
@@ -614,7 +612,30 @@ const PostExercise = async (req, res) => {
 
                 }
             });
+            const FOUR_HOURS_IN_MS = 4 * 60 * 60 * 1000;
+            const assignmentsWithExecution = assignments.map((a) => {
+                const executions = a.training.trainingExecution || [];
 
+                const validDurations = executions
+                    .filter(e => e.startAt && e.endAt)
+                    .map(e => {
+                        const start = new Date(e.startAt).getTime();
+                        const end = new Date(e.endAt).getTime();
+                        const duration = end - start;
+                        return duration < FOUR_HOURS_IN_MS ? duration / 1000 : null; // segundos
+                    })
+                    .filter(duration => duration !== null);
+
+                const avgExecutionTime =
+                    validDurations.length > 0
+                        ? validDurations.reduce((sum, d) => sum + d, 0) / validDurations.length
+                        : null;
+
+                return {
+                    ...a,
+                    executionTime: avgExecutionTime
+                };
+            });
 
             const trainingIds = assignments.map(a => a.training.id);
 
@@ -629,7 +650,7 @@ const PostExercise = async (req, res) => {
             });
 
 
-            const assignmentsWithAvg = assignments.map(a => {
+            const assignmentsWithAvg = assignmentsWithExecution.map(a => {
                 const evaluationObj = evaluations.find(e => e.trainingId === a.training.id);
                 const avg = evaluationObj?._avg?.evaluation ?? null;
 
@@ -637,7 +658,7 @@ const PostExercise = async (req, res) => {
                     ...a,
                     training: {
                         ...a.training,
-                        evaluation: avg
+                        evaluation: avg,
                     }
                 };
             });
