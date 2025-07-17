@@ -318,7 +318,7 @@ const GetAllPosts = async (req, res) => {
                     authorId: alreadyClient.client.id,
                     title: titleChecked || null,
                     description: descriptionChecked || null,
-                    image: req.body.image || null,
+                    image: req.body.image || alreadyPost.image,
                     type: req.body.type || alreadyPost.type
                 },
             });
