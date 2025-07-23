@@ -232,6 +232,73 @@ const PostTrainingExecution = async (req, res) => {
         }
 
     },
+    GetLastExecution = async (req, res) => {
+        try {
+            const adminCheck = await jwtUncrypt(req.headers.authorization);
+
+            if (!adminCheck?.user) {
+                return res.status(403).json({ message: "Usuário não autorizado." });
+            }
+
+            const alreadyUser = await p.user.findFirst({
+                where: {
+                    id: adminCheck.user.id,
+                    situation: 1,
+                    deletedAt: null,
+                },
+                include: {
+                    client: true,
+                },
+            });
+
+            if (!alreadyUser || !alreadyUser.client) {
+                return res.status(403).json({ message: "Usuário não autorizado." });
+            }
+
+            const lastExecution = await p.trainingExecution.findFirst({
+                where: {
+                    clientId: alreadyUser.client.id,
+                },
+                include: {
+                    training: true,
+                },
+                orderBy: {
+                    startAt: "desc",
+                },
+            });
+
+            if (!lastExecution) {
+                return res.status(200).json(null);
+            }
+
+            const start = new Date(lastExecution.startAt);
+            const end = new Date(lastExecution.endAt);
+            const now = new Date();
+
+            const isToday =
+                start.getFullYear() === now.getFullYear() &&
+                start.getMonth() === now.getMonth() &&
+                start.getDate() === now.getDate();
+
+            const durationMs = end.getTime() - start.getTime();
+            const totalMinutes = Math.floor(durationMs / 60000);
+            const hours = Math.floor(totalMinutes / 60).toString().padStart(2, "0");
+            const minutes = (totalMinutes % 60).toString().padStart(2, "0");
+
+            const response = {
+                todayTraining: isToday,
+                duration: `${hours}:${minutes}`,
+                trainingExecution: lastExecution,
+            };
+
+            return res.status(200).json(response);
+        } catch (error) {
+            console.error("Erro ao buscar última execução de treinamento:", error);
+            return res.status(500).json({ message: "Erro interno no servidor." });
+        } finally {
+            await p.$disconnect();
+        }
+    },
     GetExecutionById = async (req, res) => {
         const { id } = req.params;
         try {
@@ -354,4 +421,4 @@ const PostTrainingExecution = async (req, res) => {
 
 
 
-module.exports = { PostTrainingExecution, CompleteTrainingExecution, PostExerciseExecution, GetExecutionById };
+module.exports = { PostTrainingExecution, CompleteTrainingExecution, PostExerciseExecution, GetExecutionById, GetLastExecution };
