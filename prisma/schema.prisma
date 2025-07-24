@@ -262,3 +262,10 @@ model forbiddenAlerts {
   @@index([clientId], map: "forbiddenAlerts_client_FK")
   @@index([postId], map: "forbiddenAlerts_posts_FK")
 }
+
+model faq {
+  id        Int    @id @default(autoincrement())
+  question  String @db.VarChar(100)
+  answer    String @db.Text
+  situation Int    @default(1) @db.TinyInt
+}

@@ -2,6 +2,7 @@ const { Router, json, urlencoded } = require('express'),
     moment = require('moment'),
     multer = require('multer'),
     user = require('../repository/user'),
+    general = require('../repository/general'),
     exercises = require('../repository/exercises'),
     executions = require('../repository/executions'),
     posts = require('../repository/posts'),
@@ -58,5 +59,9 @@ router.get('/posts', async (req, res) => posts.GetAllPosts(req, res)),
     router.post('/post', async (req, res) => posts.PostPostkk(req, res)),
     router.put('/post', async (req, res) => posts.PutPostkk(req, res)),
     router.put('/delete-post', async (req, res) => posts.DeletePostkk(req, res));
+
+// *********************************************************************************************** FAQ ROUTES
+router.get('/faq', async (req, res) => general.GetFaq(req, res));
+
 
 module.exports = router
