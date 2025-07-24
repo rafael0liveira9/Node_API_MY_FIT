@@ -142,12 +142,15 @@ model training {
   packageId           Int?
   photo               String?               @db.VarChar(255)
   series              series[]
+  shop                shop[]
   user                client                @relation(fields: [authorId], references: [id], onUpdate: Restrict, map: "training_user_FK")
+  Renamedpackage      Renamedpackage?       @relation(fields: [packageId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "training_package_FK")
   trainingAssignments trainingAssignments[]
   trainingEvaluations trainingEvaluations[]
   trainingExecution   trainingExecution[]
 
   @@index([authorId], map: "training_client_FK")
+  @@index([packageId], map: "training_package_FK")
 }
 
 model muscleGroup {
@@ -268,4 +271,29 @@ model faq {
   question  String @db.VarChar(100)
   answer    String @db.Text
   situation Int    @default(1) @db.TinyInt
+}
+
+model shop {
+  id             Int             @id @default(autoincrement())
+  packageId      Int?
+  trainingId     Int?
+  value          Float?
+  discount       Float?
+  couponId       Int?
+  situation      Int             @default(1) @db.TinyInt
+  expirationDate DateTime?       @db.DateTime(0)
+  Renamedpackage Renamedpackage? @relation(fields: [packageId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "shop_package_FK")
+  training       training?       @relation(fields: [trainingId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "shop_training_FK")
+
+  @@index([trainingId], map: "shop_training_FK")
+  @@index([packageId], map: "shop_package_FK")
+}
+
+/// This model has been renamed to 'Renamedpackage' during introspection, because the original name 'package' is reserved.
+model Renamedpackage {
+  id       Int        @id @default(autoincrement())
+  shop     shop[]
+  training training[]
+
+  @@map("package")
 }

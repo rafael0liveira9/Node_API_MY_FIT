@@ -71,7 +71,8 @@ const GetAllPosts = async (req, res) => {
         }
 
         const PRIORITY_MAP = {
-            1: 4,
+            1: 5,
+            5: 4,
             4: 3,
             3: 2,
             2: 1,
