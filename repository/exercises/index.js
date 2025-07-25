@@ -369,6 +369,67 @@ const PostExercise = async (req, res) => {
             await p.$disconnect();
         }
     },
+    AssignTraining = async (req, res) => {
+        const user = await jwtUncrypt(req.headers.authorization);
+        const userId = user?.user?.id;
+
+        if (!userId) {
+            return res.status(401).json({ message: "Usuário não encontrado." });
+        }
+
+        const { trainingId, clientId } = req.body;
+
+        try {
+            const alreadyUser = await p.client.findFirst({
+                where: {
+                    id: clientId,
+                    situation: 1,
+                }
+            });
+
+            console.log('alreadyUser', alreadyUser)
+
+            const alreadyHave = await p.trainingAssignments.findFirst({
+                where: {
+                    trainingId: trainingId,
+                    clientId: clientId,
+                    situation: 1
+                }
+            });
+
+            console.log('alreadyHave', alreadyHave)
+
+            if (alreadyHave) {
+                return res.status(401).json({
+                    message: "Treino com o mesmo nome já existe!"
+                });
+            }
+            const newTraining = await p.trainingAssignments.create({
+                data: {
+                    trainingId: trainingId,
+                    clientId: clientId,
+                }
+            });
+
+
+
+            if (newTraining) {
+                return res.status(200).json(newTraining);
+            } else {
+                console.log(newAssignment, newTraining)
+            }
+
+
+
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({
+                message: "Erro ao criar novo treino"
+            });
+        } finally {
+            await p.$disconnect();
+        }
+    },
     GetAllGroups = async (req, res) => {
 
         const adminCheck = await jwtUncrypt(req.headers.authorization)
@@ -885,4 +946,4 @@ const PostExercise = async (req, res) => {
 
 
 
-module.exports = { PostExercise, PostTraining, PostSerie, GetAllGroups, GetExercisesByGroup, PostExercisesOnGroup, PutTraining, TrainingPhotoUpdate, GetMyTrainings, GetTrainingById, DeleteTraining, GetAllExercises, PutSerie, EvaluationUpdate, GetShopWithTrainings };
+module.exports = { PostExercise, PostTraining, PostSerie, GetAllGroups, GetExercisesByGroup, PostExercisesOnGroup, PutTraining, TrainingPhotoUpdate, GetMyTrainings, GetTrainingById, DeleteTraining, GetAllExercises, PutSerie, EvaluationUpdate, GetShopWithTrainings, AssignTraining };
