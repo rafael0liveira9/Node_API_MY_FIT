@@ -401,7 +401,7 @@ const PostExercise = async (req, res) => {
 
             if (alreadyHave) {
                 return res.status(401).json({
-                    message: "Treino com o mesmo nome já existe!"
+                    message: "Você já possui este treino!"
                 });
             }
             const newTraining = await p.trainingAssignments.create({
