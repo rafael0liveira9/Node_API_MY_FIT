@@ -125,6 +125,11 @@ const GetShopWithTrainings = async (req, res) => {
                 training: {
                     include: {
                         user: true,
+                        series: {
+                            include: {
+                                exercise: true
+                            }
+                        },
                         trainingEvaluations: {
                             take: 50,
                             orderBy: { createdAt: 'desc' },
