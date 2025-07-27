@@ -436,15 +436,7 @@ const GetUserById = async (req, res) => {
                 message: "Usuário não encontrado."
             });
         } else {
-            if (adminCheck?.user) {
-                editId = req.body.id
-            } else if (!!adminCheck?.user?.id) {
-                editId = adminCheck?.user?.id
-            } else {
-                return res.status(401).json({
-                    message: "Usuário não encontrado."
-                });
-            }
+            editId = adminCheck?.user?.id
         }
 
         const alreadyUser = await p.user.findFirst({
