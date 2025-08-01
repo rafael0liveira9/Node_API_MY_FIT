@@ -48,23 +48,18 @@ const GetAllPosts = async (req, res) => {
             },
             include: {
                 client: {
-                    where: {
-                        situation: 1
-                    },
-                    select: {
-                        id: true,
-                        name: true,
-                        nick: true,
-                        photo: true,
-                        cref: true,
-                        birthDate: true,
-                        userType: true,
+                    include: {
+                        friendship_friendship_friendToclient: true,
+                        friendship_friendship_senderToclient: true
                     }
                 }
             }
-        })
+        });
 
-        if (!posts) {
+        const filteredPosts = posts.filter(post => post.client?.situation === 1);
+
+
+        if (!filteredPosts) {
             return res.status(500).json({
                 message: "Erro ao resgatar posts",
             });
@@ -78,7 +73,7 @@ const GetAllPosts = async (req, res) => {
             2: 1,
         };
 
-        posts.sort((a, b) => {
+        filteredPosts.sort((a, b) => {
             const priorityA = PRIORITY_MAP[a.client.userType] || 0;
             const priorityB = PRIORITY_MAP[b.client.userType] || 0;
 
@@ -94,10 +89,10 @@ const GetAllPosts = async (req, res) => {
         const now = new Date();
         const TWELVE_HOURS = 12 * 60 * 60 * 1000;
 
-        const recentPosts = posts.filter(
+        const recentPosts = filteredPosts.filter(
             (post) => now.getTime() - new Date(post.createdAt).getTime() <= TWELVE_HOURS
         );
-        const otherPosts = posts.filter(
+        const otherPosts = filteredPosts.filter(
             (post) => now.getTime() - new Date(post.createdAt).getTime() > TWELVE_HOURS
         );
 
