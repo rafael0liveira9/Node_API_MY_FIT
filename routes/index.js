@@ -4,6 +4,7 @@ const { Router, json, urlencoded } = require('express'),
     user = require('../repository/user'),
     shop = require('../repository/shop'),
     general = require('../repository/general'),
+    relations = require('../repository/relationships'),
     exercises = require('../repository/exercises'),
     executions = require('../repository/executions'),
     posts = require('../repository/posts'),
@@ -67,5 +68,12 @@ router.get('/posts', async (req, res) => posts.GetAllPosts(req, res)),
 // *********************************************************************************************** FAQ ROUTES
 router.get('/faq', async (req, res) => general.GetFaq(req, res));
 
+// *********************************************************************************************** RELATIONSHIPS ROUTES
+router.get('/friends-request', async (req, res) => relations.GetMyFriendRequest(req, res)),
+    router.get('/personal-request', async (req, res) => relations.GetMyPersonalsRequest(req, res)),
+    router.post('/personal-request-post', async (req, res) => relations.PostRelationship(req, res)),
+    router.post('/friends-request-post', async (req, res) => relations.PostFriendship(req, res)),
+    router.put('/personal-accept', async (req, res) => relations.AcceptRelationship(req, res)),
+    router.put('/friends-accept', async (req, res) => relations.AcceptFriendship(req, res));
 
 module.exports = router

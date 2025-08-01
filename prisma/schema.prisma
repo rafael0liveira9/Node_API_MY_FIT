@@ -30,8 +30,13 @@ model client {
   type                                                          type                  @relation(fields: [userType], references: [id], onUpdate: Restrict, map: "client_type_FK")
   exercise                                                      exercise[]
   forbiddenAlerts                                               forbiddenAlerts[]
+  friendship_friendship_senderToclient                          friendship[]          @relation("friendship_senderToclient")
+  friendship_friendship_friendToclient                          friendship[]          @relation("friendship_friendToclient")
   posts                                                         posts[]
+  relationship_relationship_clientToclient                      relationship[]        @relation("relationship_clientToclient")
+  relationship_relationship_responsibleToclient                 relationship[]        @relation("relationship_responsibleToclient")
   serieExecution                                                serieExecution[]
+  shop                                                          shop[]
   training                                                      training[]
   trainingAssignments_trainingAssignments_clientIdToclient      trainingAssignments[] @relation("trainingAssignments_clientIdToclient")
   trainingAssignments_trainingAssignments_responsibleIdToclient trainingAssignments[] @relation("trainingAssignments_responsibleIdToclient")
@@ -282,11 +287,14 @@ model shop {
   couponId       Int?
   situation      Int             @default(1) @db.TinyInt
   expirationDate DateTime?       @db.DateTime(0)
+  sellerId       Int
+  client         client          @relation(fields: [sellerId], references: [id], onUpdate: Restrict, map: "shop_client_FK")
   Renamedpackage Renamedpackage? @relation(fields: [packageId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "shop_package_FK")
   training       training?       @relation(fields: [trainingId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "shop_training_FK")
 
   @@index([trainingId], map: "shop_training_FK")
   @@index([packageId], map: "shop_package_FK")
+  @@index([sellerId], map: "shop_client_FK")
 }
 
 /// This model has been renamed to 'Renamedpackage' during introspection, because the original name 'package' is reserved.
@@ -296,4 +304,34 @@ model Renamedpackage {
   training training[]
 
   @@map("package")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model friendship {
+  id                               Int       @id @default(autoincrement())
+  sender                           Int
+  friend                           Int
+  accept                           Int       @default(0) @db.TinyInt
+  createdAt                        DateTime  @default(now()) @db.DateTime(0)
+  updatedAt                        DateTime? @db.DateTime(0)
+  client_friendship_senderToclient client    @relation("friendship_senderToclient", fields: [sender], references: [id], onUpdate: Restrict, map: "friendship_client_FK")
+  client_friendship_friendToclient client    @relation("friendship_friendToclient", fields: [friend], references: [id], onUpdate: Restrict, map: "friendship_client_FK_1")
+
+  @@index([sender], map: "friendship_client_FK")
+  @@index([friend], map: "friendship_client_FK_1")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model relationship {
+  id                                      Int       @id @default(autoincrement())
+  client                                  Int
+  responsible                             Int
+  accept                                  Int       @default(0) @db.TinyInt
+  createdAt                               DateTime  @default(now()) @db.DateTime(0)
+  updatedAt                               DateTime? @db.DateTime(0)
+  client_relationship_clientToclient      client    @relation("relationship_clientToclient", fields: [client], references: [id], onUpdate: Restrict, map: "relationship_client_FK")
+  client_relationship_responsibleToclient client    @relation("relationship_responsibleToclient", fields: [responsible], references: [id], onUpdate: Restrict, map: "relationship_client_FK_1")
+
+  @@index([client], map: "relationship_client_FK")
+  @@index([responsible], map: "relationship_client_FK_1")
 }
