@@ -187,7 +187,7 @@ const GetMyFriendRequest = async (req, res) => {
             id: request?.id
         },
         data: {
-            accept: 1,
+            accept: req.body.accept === true ? 1 : 2,
             updatedAt: new Date()
         }
     })
@@ -289,7 +289,7 @@ const GetMyFriendRequest = async (req, res) => {
             id: request?.id
         },
         data: {
-            accept: 1,
+            accept: req.body.accept === true ? 1 : 2,
             updatedAt: new Date()
         }
     })
