@@ -341,6 +341,18 @@ const GetMyFriendRequest = async (req, res) => {
             ]
         }
     });
+    const requests = await p.friendship.findMany({
+        where: {
+            accept: 0,
+            sender: alreadyUser.client.id
+        }
+    });
+    const receives = await p.friendship.findMany({
+        where: {
+            accept: 0,
+            friend: alreadyUser.client.id
+        }
+    });
     console.log('b', friends)
 
     if (!friends) {
@@ -348,9 +360,9 @@ const GetMyFriendRequest = async (req, res) => {
     }
 
 
-    if (friends) {
+    if (friends || requests || receives) {
         await p.$disconnect();
-        return res.status(201).json(friends);
+        return res.status(201).json({ friends: friends, requests: requests, receives: receives });
     } else {
         await p.$disconnect();
         return res.status(401).json({

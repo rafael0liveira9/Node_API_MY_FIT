@@ -48,10 +48,7 @@ const GetAllPosts = async (req, res) => {
             },
             include: {
                 client: {
-                    include: {
-                        friendship_friendship_friendToclient: true,
-                        friendship_friendship_senderToclient: true,
-                    }
+                    include: true
                 }
             }
         });
