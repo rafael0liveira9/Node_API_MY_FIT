@@ -745,16 +745,13 @@ const PostExercise = async (req, res) => {
             });
 
 
-
             if (sortedAssignments) {
                 let result = sortedAssignments;
-
                 if (personalId) {
                     result = result.filter(
-                        a => a.training?.user?.id === Number(personalId)
+                        a => a.responsibleId === Number(personalId)
                     );
                 }
-
                 await p.$disconnect();
                 return res.status(200).json(result);
             } else {
