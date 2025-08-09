@@ -628,14 +628,19 @@ const PostExercise = async (req, res) => {
         return res.status(201).json(finallyResponse);
 
     },
-    GetMyTrainings = async (req, res) => {
+    GetMyTrainings = async (req, res, personalId) => {
 
         const adminCheck = await jwtUncrypt(req.headers.authorization)
+        let filter = {};
 
         if (!adminCheck?.user?.email) {
             return res.status(401).json({
                 message: "Usuário não encontrado."
             });
+        }
+
+        if (personalId) {
+            filter.personalId = Number(personalId);
         }
 
         try {
@@ -742,8 +747,16 @@ const PostExercise = async (req, res) => {
 
 
             if (sortedAssignments) {
+                let result = sortedAssignments;
+
+                if (personalId) {
+                    result = result.filter(
+                        a => a.training?.user?.id === Number(personalId)
+                    );
+                }
+
                 await p.$disconnect();
-                return res.status(200).json(sortedAssignments);
+                return res.status(200).json(result);
             } else {
                 await p.$disconnect();
                 return res.status(401).json({
