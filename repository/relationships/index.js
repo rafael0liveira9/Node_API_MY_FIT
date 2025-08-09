@@ -403,7 +403,6 @@ const GetMyFriendRequest = async (req, res) => {
         },
         include: {
             client_relationship_responsibleToclient: true,
-            client_relationship_clientToclient: true
         }
     });
 
