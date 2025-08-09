@@ -400,6 +400,10 @@ const GetMyFriendRequest = async (req, res) => {
         where: {
             accept: 1,
             client: alreadyUser.client.id
+        },
+        include: {
+            client_relationship_responsibleToclient: true,
+            client_relationship_clientToclient: true
         }
     });
 
