@@ -370,6 +370,54 @@ const GetMyFriendRequest = async (req, res) => {
         });
     }
 
+}, GetMypersonals = async (req, res) => {
+
+    const adminCheck = await jwtUncrypt(req.headers.authorization)
+
+    if (!adminCheck?.user) {
+        return res.status(403).json({
+            message: "Usuário não autorizado."
+        });
+    }
+
+    const alreadyUser = await p.user.findFirst({
+        where: {
+            id: adminCheck.user.id,
+            situation: 1,
+            deletedAt: null,
+        },
+        include: {
+            client: true,
+        },
+    });
+
+    if (!alreadyUser || !alreadyUser.client) {
+        return res.status(403).json({ message: "Usuário não autorizado." });
+    }
+
+
+    const relationship = await p.relationship.findMany({
+        where: {
+            accept: 1,
+            client: alreadyUser.client.id
+        }
+    });
+
+    if (!relationship) {
+        return res.status(403).json({ message: "Personais não encontrados." });
+    }
+
+
+    if (relationship) {
+        await p.$disconnect();
+        return res.status(200).json(relationship);
+    } else {
+        await p.$disconnect();
+        return res.status(401).json({
+            message: "Usuário não cadastrado."
+        });
+    }
+
 }
 
-module.exports = { GetMyFriendRequest, GetMyPersonalsRequest, AcceptFriendship, PostFriendship, AcceptRelationship, PostRelationship, GetMyFriends };
+module.exports = { GetMyFriendRequest, GetMyPersonalsRequest, AcceptFriendship, PostFriendship, AcceptRelationship, PostRelationship, GetMyFriends, GetMypersonals };

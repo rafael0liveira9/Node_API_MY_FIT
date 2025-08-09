@@ -70,6 +70,7 @@ router.get('/faq', async (req, res) => general.GetFaq(req, res));
 
 // *********************************************************************************************** RELATIONSHIPS ROUTES
 router.get('/friends', async (req, res) => relations.GetMyFriends(req, res)),
+    router.get('/personals', async (req, res) => relations.GetMypersonals(req, res)),
     router.get('/friends-request', async (req, res) => relations.GetMyFriendRequest(req, res)),
     router.get('/personal-request', async (req, res) => relations.GetMyPersonalsRequest(req, res)),
     router.post('/personal-request-post', async (req, res) => relations.PostRelationship(req, res)),
