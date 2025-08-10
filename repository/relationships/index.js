@@ -9,6 +9,7 @@ const { jwtUncrypt } = require('../../utils/midleware/auth'),
         message: "Erro Interno"
     },
     moment = require('moment');
+const { textCheck } = require('../../utils');
 
 const GetMyFriendRequest = async (req, res) => {
 
@@ -451,6 +452,16 @@ const GetMyFriendRequest = async (req, res) => {
         return res.status(403).json({ message: "Usuário não autorizado." });
     }
 
+    let censored = false;
+    let observationChecked = req.body.observations || "";
+
+    if (req.body.observations) {
+        const observationsResult = textCheck(req.body.observations);
+
+        censored = !observationsResult.ok;
+        observationChecked = observationsResult.text;
+    }
+
     const alreadyUser = await p.user.findFirst({
         where: {
             id: adminCheck.user.id,
@@ -478,7 +489,7 @@ const GetMyFriendRequest = async (req, res) => {
             where: { id: alreadyEvaluated.id },
             data: {
                 evaluation: req.body.evaluation ?? alreadyEvaluated.evaluation,
-                observations: req.body.observations ?? alreadyEvaluated.observations,
+                observations: observationChecked ?? alreadyEvaluated.observations,
                 updatedAt: new Date()
             }
         });
