@@ -499,6 +499,44 @@ const GetMyFriendRequest = async (req, res) => {
 
     await p.$disconnect();
     return res.status(200).json(response);
+}, GetPersonalEvaluations = async (req, res, evaluation) => {
+    const adminCheck = await jwtUncrypt(req.headers.authorization);
+
+    if (!adminCheck?.user) {
+        return res.status(403).json({ message: "Usuário não autorizado." });
+    }
+
+    const alreadyUser = await p.user.findFirst({
+        where: {
+            id: adminCheck.user.id,
+            situation: 1,
+            deletedAt: null,
+        },
+        include: { client: true },
+    });
+
+    if (!alreadyUser || !alreadyUser.client) {
+        return res.status(403).json({ message: "Usuário não autorizado." });
+    }
+
+    const whereFilter = evaluation
+        ? { personalId: req.body.id, evaluation: Number(evaluation) }
+        : { personalId: req.body.id };
+
+    const response = await p.personalEvaluations.findMany({
+        where: whereFilter,
+        orderBy: [
+            { updatedAt: 'desc' },
+            { createdAt: 'desc' }
+        ]
+    });
+
+    if (!response || response.length === 0) {
+        return res.status(403).json({ message: "Não foi possível avaliar." });
+    }
+
+    await p.$disconnect();
+    return res.status(200).json(response);
 };
 
-module.exports = { PostPersonalEvaluation, GetMyFriendRequest, GetMyPersonalsRequest, AcceptFriendship, PostFriendship, AcceptRelationship, PostRelationship, GetMyFriends, GetMypersonals };
+module.exports = { GetPersonalEvaluations, PostPersonalEvaluation, GetMyFriendRequest, GetMyPersonalsRequest, AcceptFriendship, PostFriendship, AcceptRelationship, PostRelationship, GetMyFriends, GetMypersonals };
