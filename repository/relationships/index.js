@@ -402,9 +402,32 @@ const GetMyFriendRequest = async (req, res) => {
             client: alreadyUser.client.id
         },
         include: {
-            client_relationship_responsibleToclient: true,
+            client_relationship_responsibleToclient: {
+                include: {
+                    personalEvaluations_personalEvaluations_personalIdToclient: {
+                        take: 1,
+                        where: {
+                            authorId: alreadyUser?.client?.id
+                        }
+                    }
+                }
+            },
         }
     });
+
+    for (const rel of relationship) {
+        const personalId = rel.client_relationship_responsibleToclient.id;
+
+        const avgEval = await p.personalEvaluations.aggregate({
+            where: {
+                personalId: personalId
+            },
+            _avg: {
+                evaluation: true
+            }
+        });
+        rel.client_relationship_responsibleToclient.generalEvaluations = avgEval._avg.evaluation;
+    }
 
     if (!relationship) {
         return res.status(403).json({ message: "Personais não encontrados." });
@@ -421,6 +444,61 @@ const GetMyFriendRequest = async (req, res) => {
         });
     }
 
-}
+}, PostPersonalEvaluation = async (req, res) => {
+    const adminCheck = await jwtUncrypt(req.headers.authorization);
 
-module.exports = { GetMyFriendRequest, GetMyPersonalsRequest, AcceptFriendship, PostFriendship, AcceptRelationship, PostRelationship, GetMyFriends, GetMypersonals };
+    if (!adminCheck?.user) {
+        return res.status(403).json({ message: "Usuário não autorizado." });
+    }
+
+    const alreadyUser = await p.user.findFirst({
+        where: {
+            id: adminCheck.user.id,
+            situation: 1,
+            deletedAt: null,
+        },
+        include: { client: true },
+    });
+
+    if (!alreadyUser || !alreadyUser.client) {
+        return res.status(403).json({ message: "Usuário não autorizado." });
+    }
+
+    const alreadyEvaluated = await p.personalEvaluations.findFirst({
+        where: {
+            authorId: alreadyUser.client.id,
+            personalId: req.body.id
+        }
+    });
+
+    let response;
+
+    if (alreadyEvaluated) {
+        response = await p.personalEvaluations.update({
+            where: { id: alreadyEvaluated.id },
+            data: {
+                evaluation: req.body.evaluation ?? alreadyEvaluated.evaluation,
+                observations: req.body.observations ?? alreadyEvaluated.observations,
+                updatedAt: new Date()
+            }
+        });
+    } else {
+        response = await p.personalEvaluations.create({
+            data: {
+                personalId: req.body.id,
+                authorId: alreadyUser.client.id,
+                evaluation: req.body.evaluation,
+                observations: req.body.observations || null,
+            }
+        });
+    }
+
+    if (!response) {
+        return res.status(403).json({ message: "Não foi possível avaliar." });
+    }
+
+    await p.$disconnect();
+    return res.status(200).json(response);
+};
+
+module.exports = { PostPersonalEvaluation, GetMyFriendRequest, GetMyPersonalsRequest, AcceptFriendship, PostFriendship, AcceptRelationship, PostRelationship, GetMyFriends, GetMypersonals };

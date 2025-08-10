@@ -32,6 +32,8 @@ model client {
   forbiddenAlerts                                               forbiddenAlerts[]
   friendship_friendship_senderToclient                          friendship[]          @relation("friendship_senderToclient")
   friendship_friendship_friendToclient                          friendship[]          @relation("friendship_friendToclient")
+  personalEvaluations_personalEvaluations_personalIdToclient    personalEvaluations[] @relation("personalEvaluations_personalIdToclient")
+  personalEvaluations_personalEvaluations_authorIdToclient      personalEvaluations[] @relation("personalEvaluations_authorIdToclient")
   posts                                                         posts[]
   relationship_relationship_clientToclient                      relationship[]        @relation("relationship_clientToclient")
   relationship_relationship_responsibleToclient                 relationship[]        @relation("relationship_responsibleToclient")
@@ -334,4 +336,19 @@ model relationship {
 
   @@index([client], map: "relationship_client_FK")
   @@index([responsible], map: "relationship_client_FK_1")
+}
+
+model personalEvaluations {
+  id                                            Int       @id @default(autoincrement())
+  personalId                                    Int?
+  evaluation                                    Int?
+  observations                                  String?   @db.VarChar(255)
+  createdAt                                     DateTime  @default(now()) @db.DateTime(0)
+  authorId                                      Int
+  updatedAt                                     DateTime? @db.DateTime(0)
+  client_personalEvaluations_personalIdToclient client?   @relation("personalEvaluations_personalIdToclient", fields: [personalId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "personalEvaluations_client_FK")
+  client_personalEvaluations_authorIdToclient   client    @relation("personalEvaluations_authorIdToclient", fields: [authorId], references: [id], onUpdate: Restrict, map: "personalEvaluations_client_FK_1")
+
+  @@index([personalId], map: "personalEvaluations_client_FK")
+  @@index([authorId], map: "personalEvaluations_client_FK_1")
 }
