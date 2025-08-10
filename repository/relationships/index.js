@@ -525,6 +525,9 @@ const GetMyFriendRequest = async (req, res) => {
 
     const response = await p.personalEvaluations.findMany({
         where: whereFilter,
+        include: {
+            client_personalEvaluations_authorIdToclient: true
+        },
         orderBy: [
             { updatedAt: 'desc' },
             { createdAt: 'desc' }
