@@ -499,7 +499,7 @@ const GetMyFriendRequest = async (req, res) => {
 
     await p.$disconnect();
     return res.status(200).json(response);
-}, GetPersonalEvaluations = async (req, res, evaluation) => {
+}, GetPersonalEvaluations = async (req, res, personalId, evaluation) => {
     const adminCheck = await jwtUncrypt(req.headers.authorization);
 
     if (!adminCheck?.user) {
@@ -520,8 +520,8 @@ const GetMyFriendRequest = async (req, res) => {
     }
 
     const whereFilter = evaluation
-        ? { personalId: req.body.id, evaluation: Number(evaluation) }
-        : { personalId: req.body.id };
+        ? { personalId: personalId, evaluation: Number(evaluation) }
+        : { personalId: personalId };
 
     const response = await p.personalEvaluations.findMany({
         where: whereFilter,
