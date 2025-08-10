@@ -520,8 +520,8 @@ const GetMyFriendRequest = async (req, res) => {
     }
 
     const whereFilter = evaluation
-        ? { personalId: personalId, evaluation: Number(evaluation) }
-        : { personalId: personalId };
+        ? { personalId: Number(personalId), evaluation: Number(evaluation) }
+        : { personalId: Number(personalId) };
 
     const response = await p.personalEvaluations.findMany({
         where: whereFilter,
