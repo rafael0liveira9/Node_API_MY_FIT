@@ -23,6 +23,12 @@ router.post('/upload-image', upload.single('file'), async (req, res) => s3.Impor
 // *********************************************************************************************** USER ROUTES
 router.get('/user/:id', async (req, res) => user.GetUserById(req, res)),
     router.get('/get-my-user', async (req, res) => user.GetMyUser(req, res)),
+    router.get('/get-clients', async (req, res) => {
+        const searchString = req.query.string;
+        const page = req.query.page;
+        const pageSize = req.query.pageSize;
+        await user.GetAllClients(req, res, searchString, page, pageSize);
+    }),
     router.post('/user/:type', async (req, res) => user.SignUp(req, res)),
     router.post('/sign-in', async (req, res) => user.SignIn(req, res)),
     router.put('/user', async (req, res) => user.EditUser(req, res)),

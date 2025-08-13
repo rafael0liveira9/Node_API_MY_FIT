@@ -538,6 +538,67 @@ const GetUserById = async (req, res) => {
         }
 
 
+    }, GetAllClients = async (req, res, searchString, page, pageSize) => {
+        console.log('GetAllClients 🚀')
+
+        if (!req.headers.authorization) {
+            return res.status(500).json({ message: "JWT é necessário." });
+        }
+
+        const user = await jwtUncrypt(req.headers.authorization)
+
+        if (!user?.user?.id) {
+            return res.status(401).json({ message: "Usuário não encontrado." });
+        }
+
+        const pageNumber = Number(page) || 1;
+        const pageLimit = Number(pageSize) || 10;
+
+        try {
+            const clients = await p.client.findMany({
+                where: {
+                    situation: 1,
+                    deletedAt: null,
+                    ...(searchString && {
+                        OR: [
+                            { name: { contains: searchString } },
+                            { nick: { contains: searchString } }
+                        ]
+                    })
+                },
+                skip: (pageNumber - 1) * pageLimit,
+                take: pageLimit,
+                orderBy: { name: 'asc' }
+            });
+
+            const total = await p.client.count({
+                where: {
+                    situation: 1,
+                    deletedAt: null,
+                    ...(searchString && {
+                        OR: [
+                            { name: { contains: searchString } },
+                            { nick: { contains: searchString } }
+                        ]
+                    })
+                }
+            });
+
+            await p.$disconnect();
+
+            return res.status(200).json({
+                page: pageNumber,
+                pageSize: pageLimit,
+                total,
+                clients
+            });
+
+        } catch (error) {
+            await p.$disconnect();
+            console.log(error);
+            return res.status(500).json({ message: "Erro ao resgatar clientes" });
+        }
     }
 
-module.exports = { GetUserById, GetMyUser, SignUp, SignIn, EditUser, SuspendUser, DeleteUser, PhotoUpdate, backgroundImageUpdate };
+
+module.exports = { GetAllClients, GetUserById, GetMyUser, SignUp, SignIn, EditUser, SuspendUser, DeleteUser, PhotoUpdate, backgroundImageUpdate };
