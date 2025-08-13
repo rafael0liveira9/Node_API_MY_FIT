@@ -747,11 +747,17 @@ const PostExercise = async (req, res) => {
 
             if (sortedAssignments) {
                 let result = sortedAssignments;
+
                 if (personalId) {
                     result = result.filter(
-                        a => a.responsibleId === Number(personalId)
+                        a => (a.responsibleId === Number(personalId) && a.isShop === 0)
+                    );
+                } else {
+                    result = result.filter(
+                        a => (a.responsibleId === alreadyUser.client.id || a.isShop === 1)
                     );
                 }
+
                 await p.$disconnect();
                 return res.status(200).json(result);
             } else {

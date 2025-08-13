@@ -184,6 +184,7 @@ model trainingAssignments {
   deletedAt                                        DateTime? @db.DateTime(0)
   CompanyResposibleId                              Int?
   maxExecutions                                    Int?
+  isShop                                           Int       @default(0) @db.TinyInt
   client_trainingAssignments_clientIdToclient      client    @relation("trainingAssignments_clientIdToclient", fields: [clientId], references: [id], onUpdate: Restrict, map: "trainingAssignments_client_FK")
   client_trainingAssignments_responsibleIdToclient client?   @relation("trainingAssignments_responsibleIdToclient", fields: [responsibleId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "trainingAssignments_client_FK_1")
   training                                         training  @relation(fields: [trainingId], references: [id], onUpdate: Restrict, map: "trainingAssignments_training_FK")
@@ -346,9 +347,21 @@ model personalEvaluations {
   createdAt                                     DateTime  @default(now()) @db.DateTime(0)
   authorId                                      Int
   updatedAt                                     DateTime? @db.DateTime(0)
+  answers                                       answers[]
   client_personalEvaluations_personalIdToclient client?   @relation("personalEvaluations_personalIdToclient", fields: [personalId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "personalEvaluations_client_FK")
   client_personalEvaluations_authorIdToclient   client    @relation("personalEvaluations_authorIdToclient", fields: [authorId], references: [id], onUpdate: Restrict, map: "personalEvaluations_client_FK_1")
 
   @@index([personalId], map: "personalEvaluations_client_FK")
   @@index([authorId], map: "personalEvaluations_client_FK_1")
+}
+
+model answers {
+  id                   Int                  @id @default(autoincrement())
+  text                 String               @db.VarChar(255)
+  personalEvaluationId Int?
+  createdAt            DateTime             @default(now()) @db.DateTime(0)
+  updatedAt            DateTime?            @db.DateTime(0)
+  personalEvaluations  personalEvaluations? @relation(fields: [personalEvaluationId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "answers_personalEvaluations_FK")
+
+  @@index([personalEvaluationId], map: "answers_personalEvaluations_FK")
 }
