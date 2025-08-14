@@ -242,14 +242,13 @@ const PostExercise = async (req, res) => {
                     }
                 });
 
-                console.log('qaaaaz', newAssignment)
             }
 
 
             if (newTraining) {
                 return res.status(200).json({
                     message: "Treino cadastrado com sucesso",
-                    newAssignment: assign && newAssignment !== null ? true : false,
+                    newAssignment: assign && newAssignment !== null ? newAssignment : null,
                     newTraining: newTraining
                 });
             } else {
