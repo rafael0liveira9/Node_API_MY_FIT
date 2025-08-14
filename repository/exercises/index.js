@@ -752,7 +752,7 @@ const PostExercise = async (req, res) => {
                     result = result.filter(
                         a => (a.responsibleId === Number(personalId) && a.isShop === 0)
                     );
-                } else {
+                } else if (personalId === 'not') {
                     result = result.filter(
                         a => (a.responsibleId === alreadyUser.client.id || a.isShop === 1)
                     );
