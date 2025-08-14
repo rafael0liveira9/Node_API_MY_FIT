@@ -237,7 +237,8 @@ const PostExercise = async (req, res) => {
                 newAssignment = await p.trainingAssignments.create({
                     data: {
                         clientId: alreadyUser.client.id,
-                        trainingId: newTraining.id
+                        trainingId: newTraining.id,
+                        responsibleId: alreadyUser.client.id
                     }
                 });
 
