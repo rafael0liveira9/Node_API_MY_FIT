@@ -12,9 +12,21 @@ const { jwtUncrypt } = require('../../utils/midleware/auth'),
     },
     moment = require('moment');
 
-const GetShopWithTrainings = async (req, res) => {
+const GetShopWithTrainings = async (req, res, search) => {
+    const whereClause = {
+        situation: 1,
+        ...(search && {
+            training: {
+                name: {
+                    contains: search,
+                    mode: 'insensitive'
+                }
+            }
+        })
+    };
+
     const shopsRaw = await p.shop.findMany({
-        where: { situation: 1 },
+        where: whereClause,
         take: 50,
         include: {
             training: {

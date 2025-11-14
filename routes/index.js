@@ -41,7 +41,10 @@ router.get('/user/:id', async (req, res) => user.GetUserById(req, res)),
 router.get('/groups', async (req, res) => exercises.GetAllGroups(req, res)),
     router.get('/exercises', async (req, res) => exercises.GetAllExercises(req, res)),
     router.get('/exercises/:id', async (req, res) => exercises.GetExercisesByGroup(req, res)),
-    router.get('/shop', async (req, res) => shop.GetShopWithTrainings(req, res)),
+    router.get('/shop', async (req, res) => {
+        const { search } = req.query;
+        shop.GetShopWithTrainings(req, res, search);
+    }),
     router.get('/shop/training/:id', async (req, res) => shop.GetShopTrainingById(req, res)),
     router.get('/trainings', async (req, res) => { const { personalId } = req.query; exercises.GetMyTrainings(req, res, personalId) }),
     router.get('/training/:id', async (req, res) => exercises.GetTrainingById(req, res)),
